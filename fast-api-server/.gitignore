@@ -177,3 +177,5 @@ cython_debug/
 
 #Depth Mask Preview
 depth_mask_preview.png
+
+.DS_Store
