@@ -1,6 +1,5 @@
 fastapi
 uvicorn[standard]
-pillow
 openai
 numpy
 ipython
