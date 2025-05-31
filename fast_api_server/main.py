@@ -1,6 +1,6 @@
 # main.py
 from fastapi import FastAPI
-from routers import image_processing
+from fast_api_server.routers import image_processing
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(

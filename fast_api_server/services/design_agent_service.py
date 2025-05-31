@@ -1,7 +1,7 @@
-from services.image_utils import resize_all_images
-from utils.openai_client import client
-from utils.logger import logger
-from utils.prompt import DESIGN_AGENT_SYS_PROMPT
+from fast_api_server.services.image_utils import resize_all_images
+from fast_api_server.utils.openai_client import client
+from fast_api_server.utils.logger import logger
+from fast_api_server.utils.prompt import DESIGN_AGENT_SYS_PROMPT
 
 async def design_assistant(context, user_prompt, user_image=None, reference_images=None):
     # Resize images before processing

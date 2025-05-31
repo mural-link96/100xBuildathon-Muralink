@@ -2,9 +2,9 @@
 # routers/image_processing.py 
 
 from fastapi import APIRouter
-from models.design_agent_request import ChatRequest
+from fast_api_server.models.design_agent_request import ChatRequest
 
-from services.design_agent_service import design_assistant
+from fast_api_server.services.design_agent_service import design_assistant
 
 
 router = APIRouter(
