@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+pillow
+openai
+torch
+transformers
+numpy
+opencv-python
+ipython
+pydantic
+requests
+python-dotenv
