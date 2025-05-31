@@ -2,7 +2,6 @@ fastapi
 uvicorn[standard]
 openai
 numpy
-ipython
 pydantic
 requests
 python-dotenv
