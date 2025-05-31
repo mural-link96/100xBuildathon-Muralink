@@ -1,0 +1,12 @@
+{
+    "models": {
+      "sketchToRender": "sketch",
+      "sketchToRenderInsp": "sketch",
+      "threeDToRender": "3d",
+      "threeDToRenderInsp": "3d",
+      "furnishToRender": "furnish",
+      "furnishToRenderInsp": "furnish",
+      "concept":"concept",
+      "moodboardToRender": "moodboard"
+    }
+  }
