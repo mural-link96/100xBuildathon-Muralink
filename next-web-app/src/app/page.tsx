@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
 const DesignAgentLanding = () => {
@@ -15,12 +16,25 @@ const DesignAgentLanding = () => {
             {/* Navigation */}
             <nav className="relative z-10 flex items-center justify-between px-6 py-4">
                 <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
+                    <div className="flex items-center relative">
+                        <Image
+                            src="/images/logo/muralink-logo-white.png"
+                            alt="M"
+                            width={60}
+                            height={60}
+                            className="h-14 w-auto transform -translate-x-2"
+                        />
+                        <span className="font-relative-pro text-2xl font-bold transform -translate-x-2 mt-2 ml-[-12px]"><span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-gray-100">uralink</span></span>
                     </div>
-                    <span className="text-xl font-bold">Tracy</span>
+                    <div className="w-0.5 h-8 bg-white rounded-lg flex items-center justify-center"></div>
+                    <div className="flex items-center space-x-2 relative">
+                        <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
+                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </div>
+                        <span className="text-xl font-bold">Tracy</span>
+                    </div>
                 </div>
                 <div className="hidden md:flex items-center space-x-8">
                     <a href="#features" className="text-gray-300 hover:text-white transition-colors">Features</a>
@@ -77,7 +91,7 @@ const DesignAgentLanding = () => {
                             className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full text-lg font-medium overflow-hidden transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
                         >
                             <span className="relative z-10 flex items-center space-x-2">
-                                <span>Get Started Free</span>
+                                <span>Get Started</span>
                                 <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                                 </svg>

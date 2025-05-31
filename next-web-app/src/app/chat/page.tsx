@@ -8,6 +8,8 @@ interface Message {
     type: 'user' | 'assistant';
     content: string;
     isGenerating?: boolean;
+    responseType?: 'image' | 'text';
+    originalPrompt?: string;
 }
 
 const DesignAgentChat = () => {
@@ -24,8 +26,34 @@ const DesignAgentChat = () => {
     ]);
     const router = useRouter();
 
+    const detectResponseType = (text: string): 'image' | 'text' => {
+        const imageKeywords = [
+            'image', 'picture', 'photo', 'visual', 'design', 'create', 'generate', 'draw', 'paint', 
+            'illustration', 'artwork', 'graphic', 'logo', 'banner', 'poster', 'icon', 'mockup',
+            'sketch', 'render', 'canvas', 'art', 'portrait', 'landscape', 'character', 'scene'
+        ];
+        
+        const textKeywords = [
+            'text', 'write', 'copy', 'content', 'article', 'blog', 'caption', 'description',
+            'headline', 'title', 'paragraph', 'story', 'script', 'email', 'letter', 'message',
+            'explain', 'describe', 'tell me', 'what is', 'how to', 'help with', 'advice'
+        ];
+
+        const lowerText = text.toLowerCase();
+        
+        const hasImageKeywords = imageKeywords.some(keyword => lowerText.includes(keyword));
+        const hasTextKeywords = textKeywords.some(keyword => lowerText.includes(keyword));
+        
+        // If both or neither, default to image since this is primarily a design tool
+        if (hasImageKeywords && !hasTextKeywords) return 'image';
+        if (hasTextKeywords && !hasImageKeywords) return 'text';
+        return 'image'; // Default to image
+    };
+
     const handleGenerate = async () => {
         if (!prompt.trim()) return;
+
+        const responseType = detectResponseType(prompt);
 
         // Add user message
         const userMessage: Message = {
@@ -36,6 +64,7 @@ const DesignAgentChat = () => {
         setMessages(prev => [...prev, userMessage]);
         
         setIsGenerating(true);
+        const currentPrompt = prompt;
         setPrompt('');
 
         // Simulate AI response
@@ -43,8 +72,12 @@ const DesignAgentChat = () => {
             const assistantMessage: Message = {
                 id: Date.now() + 1,
                 type: 'assistant',
-                content: "I'm creating your design now! This looks like an exciting project. Let me generate something amazing for you.",
-                isGenerating: true
+                content: responseType === 'image' 
+                    ? "I'm creating your design now! This looks like an exciting project. Let me generate something amazing for you."
+                    : "Let me help you with that! I'm crafting a thoughtful response for you.",
+                isGenerating: true,
+                responseType: responseType,
+                originalPrompt: currentPrompt
             };
             setMessages(prev => [...prev, assistantMessage]);
             setIsGenerating(false);
@@ -83,7 +116,7 @@ const DesignAgentChat = () => {
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800/50 backdrop-blur-sm">
                 <div className="flex items-center space-x-3">
                     <button 
-                        onClick={() => router.push('/')}
+                        onClick={() => router.push('/design-agent')}
                         className="p-2 hover:bg-gray-800/50 rounded-lg transition-colors"
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -141,17 +174,44 @@ const DesignAgentChat = () => {
                                 
                                 {/* Generation Placeholder */}
                                 {message.isGenerating && (
-                                    <div className="mt-4 bg-gray-800/30 backdrop-blur-sm rounded-2xl p-8 w-80 border border-gray-700/50">
-                                        <div className="aspect-square bg-gray-700/50 rounded-xl flex items-center justify-center mb-4">
-                                            <div className="text-center">
-                                                <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-                                                <p className="text-gray-400 text-sm">Generating your design...</p>
+                                    <div className="mt-4">
+                                        {message.responseType === 'image' ? (
+                                            // Image Generation Placeholder
+                                            <div className="bg-gray-800/30 backdrop-blur-sm rounded-2xl p-8 w-80 border border-gray-700/50">
+                                                <div className="aspect-square bg-gray-700/50 rounded-xl flex items-center justify-center mb-4">
+                                                    <div className="text-center">
+                                                        <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                                                        <p className="text-gray-400 text-sm">Generating your design...</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center justify-between text-xs text-gray-500">
+                                                    <span>Style: {selectedStyle || 'Auto'}</span>
+                                                    <span>Ratio: {aspectRatio}</span>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="flex items-center justify-between text-xs text-gray-500">
-                                            <span>Style: {selectedStyle || 'Auto'}</span>
-                                            <span>Ratio: {aspectRatio}</span>
-                                        </div>
+                                        ) : (
+                                            // Text Response Placeholder
+                                            <div className="bg-gray-800/30 backdrop-blur-sm rounded-2xl p-6 w-full max-w-md border border-gray-700/50">
+                                                <div className="flex items-center space-x-3 mb-4">
+                                                    <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                                                    <span className="text-gray-400 text-sm">Writing response...</span>
+                                                </div>
+                                                
+                                                {/* Animated typing placeholder */}
+                                                <div className="space-y-2">
+                                                    <div className="h-3 bg-gray-600/50 rounded animate-pulse"></div>
+                                                    <div className="h-3 bg-gray-600/50 rounded animate-pulse w-4/5"></div>
+                                                    <div className="h-3 bg-gray-600/50 rounded animate-pulse w-3/4"></div>
+                                                    <div className="h-3 bg-gray-600/50 rounded animate-pulse w-5/6"></div>
+                                                </div>
+                                                
+                                                <div className="mt-4 pt-3 border-t border-gray-700/30">
+                                                    <p className="text-xs text-gray-500 truncate">
+                                                        Responding to: "{message.originalPrompt}"
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -235,10 +295,12 @@ const DesignAgentChat = () => {
                     <div className="flex flex-wrap items-center gap-2 mt-3">
                         <span className="text-xs text-gray-500">Quick ideas:</span>
                         {[
-                            "Modern logo design",
-                            "Abstract artwork",
-                            "Character illustration",
-                            "Website mockup"
+                            "Create a modern logo design",
+                            "Generate abstract artwork",
+                            "Draw a character illustration",
+                            "Write a product description",
+                            "Explain design principles",
+                            "Help with color theory"
                         ].map((idea, index) => (
                             <button
                                 key={index}

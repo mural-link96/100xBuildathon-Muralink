@@ -34,7 +34,7 @@ async def search_product_on_google_shopping(product_name, properties=None):
         params = {
             "engine": "google_shopping",
             "q": search_query,
-            "api_key": DESIGN_AGENT_SYS_PROMPT,  # Make sure to set this in your environment
+            "api_key": os.getenv("SERP_API_KEY"),  # Make sure to set this in your environment
             "num": 5,  # Limit to top 5 results
             "hl": "en",
             "gl": "us"
