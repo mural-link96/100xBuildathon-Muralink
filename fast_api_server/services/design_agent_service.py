@@ -190,10 +190,6 @@ async def design_assistant(context, user_prompt, user_image=None, reference_imag
         return {
             "conversation": [
                 {
-                    "role": "user",
-                    "content": message_content if len(message_content) > 1 else user_prompt
-                },
-                {
                     "role": response.output[0].role,
                     "content": response.output[0].content[0].text
                 }

@@ -29,7 +29,6 @@ export class FastAPIService {
 			};
 
 			const currentContext = getChatContext();
-			console.log('Current context:', currentContext);
 
 			const requestBody = {
 				"context": currentContext,
@@ -37,8 +36,6 @@ export class FastAPIService {
 				"user_image": image,
 				"reference_images": reference_images.map(img => ({ image_base_64: img }))
 			};
-
-			console.log(requestBody);
 
 			const options = {
 				method: 'POST',
@@ -59,17 +56,39 @@ export class FastAPIService {
 
 			const data = await response.json();
 
-			const newMessage: ChatContextEntry = data.conversation[0];
+			const newMessage: ChatContextEntry = {
+				role: "user",
+				content: [
+					{
+						type: "input_text",
+						text: prompt
+					},
+					// Add main image if available
+					...(image
+					? [{
+						type: "input_image",
+						image_url: `data:image/jpeg;base64,${image}`
+						}]
+					: []),
+
+					// Add reference images if available
+					...reference_images.map(refImage => ({
+						type: "input_image",
+						image_url: `data:image/jpeg;base64,${refImage}`
+					}))
+				]
+			};
+
 
 			updateChatContext([newMessage]);
 
-			const assistantReply: ChatContextEntry = data.conversation[1];
+			const assistantReply: ChatContextEntry = data.conversation[0];
 
 			updateChatContext([assistantReply]);
 
 			return {
 				success: true,
-				data: (data.conversation[1])
+				data
 			};
 		} catch (error) {
 			console.error('Error in designAgent:', error);
