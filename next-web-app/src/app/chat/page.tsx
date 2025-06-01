@@ -281,7 +281,7 @@ const DesignAgentChat = () => {
             const base64Image = await toBase64(uploadedImage);
             userContent.push({
                 type: 'input_image',
-                text: `data:image/${uploadedImage.type.split('/')[1]};base64,${base64Image}`
+                image_url: `data:image/${uploadedImage.type.split('/')[1]};base64,${base64Image}`
             });
         }
 
@@ -375,7 +375,7 @@ const DesignAgentChat = () => {
         const firstImage = getChatSession(currentSessionId)
             ?.conversation
             .flatMap(e => e.role === 'user' && Array.isArray(e.content) ? e.content : [])
-            .find(c => c.type === 'input_image')?.text;
+            .find(c => c.type === 'input_image')?.image_url;
         
 
 
