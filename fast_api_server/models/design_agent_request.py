@@ -10,4 +10,8 @@ class ChatRequest(BaseModel):
     context: List[Message]
     user_prompt: str
     user_image: Optional[str] = None  # Base64 string or URL
-    reference_images: Optional[List[str]] = None  # List of base64 strings or URLs
+
+class DesignAgentImageGenerate(BaseModel):
+    context: List[Message]
+    user_image: str
+    product_image_urls: List[str]

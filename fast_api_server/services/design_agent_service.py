@@ -1,11 +1,14 @@
+import base64
 import os
 import asyncio
+from typing import Dict, List
+import requests
 from serpapi import GoogleSearch
 from fast_api_server.services.image_utils import resize_all_images
 from fast_api_server.services.text_utils import parse_product_list
 from fast_api_server.utils.openai_client import client
 from fast_api_server.utils.logger import logger
-from fast_api_server.utils.prompt import DESIGN_AGENT_SYS_PROMPT
+from fast_api_server.utils.prompt import DESIGN_AGENT_SYS_PROMPT, DESIGN_AGENT_IMG_SYS_PROMPT
 
 async def search_product_on_google_shopping(product_name, properties=None):
     """
@@ -119,7 +122,7 @@ async def search_all_products(product_list):
     
     return enhanced_products
 
-async def design_assistant(context, user_prompt, user_image=None, reference_images=None):
+async def design_assistant(context, user_prompt, user_image=None):
     # Resize images before processing
     resized_user_image = None
     resized_reference_images = []
@@ -128,10 +131,6 @@ async def design_assistant(context, user_prompt, user_image=None, reference_imag
     if user_image:
         resized_user_images = await resize_all_images([user_image])
         resized_user_image = resized_user_images[0] if resized_user_images else None
-    
-    # Resize reference images if provided
-    if reference_images:
-        resized_reference_images = await resize_all_images(reference_images)
     
     # Build the content for the new message
     message_content = []
@@ -149,14 +148,6 @@ async def design_assistant(context, user_prompt, user_image=None, reference_imag
             "type": "input_image",
             "image_url": f"data:image/jpeg;base64,{resized_user_image}"
         })
-    
-    # Add resized reference images if provided
-    if resized_reference_images:
-        for ref_image in resized_reference_images:
-            message_content.append({
-                "type": "input_image",
-                "image_url": f"data:image/jpeg;base64,{ref_image}"
-            })
     
     # Build the complete message array
     message = [{
@@ -201,3 +192,89 @@ async def design_assistant(context, user_prompt, user_image=None, reference_imag
     except Exception as e:
         logger.error(f"Error in design_assistant: {str(e)}")
         raise
+
+# Sync function to fetch and convert image to base64
+def sync_image_to_base64(url: str) -> str:
+    response = requests.get(url)
+    if response.status_code != 200:
+        raise Exception(f"Failed to fetch image from {url}")
+
+    content_type = response.headers.get("Content-Type", "image/jpeg")
+    encoded = base64.b64encode(response.content).decode("utf-8")
+    return f"data:{content_type};base64,{encoded}"
+
+# Async wrapper around the sync function
+async def image_to_base64(url: str) -> str:
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(None, sync_image_to_base64, url)
+
+# Your main function that handles image conversion and resizing
+async def design_assistant_image_generation(context, user_image: str, product_image_urls: List[str]) -> str:
+    # Convert product image URLs to base64
+    product_images_base64 = await asyncio.gather(*[image_to_base64(url) for url in product_image_urls])
+
+    # Combine all images
+    all_images = [user_image] + product_images_base64
+
+    # Resize all images
+    resized_images = await resize_all_images(all_images)
+
+    # Construct user content with input_image format
+    user_content = [
+        {
+            "type": "input_image",
+            "image_url": f"data:image/png;base64,{image_base64}"
+        } for image_base64 in resized_images
+    ]
+
+    # Send API request
+    response = client.responses.create(
+        model="gpt-4.1-mini",
+        input=[
+            {
+                "role": "system",
+                "content": DESIGN_AGENT_IMG_SYS_PROMPT
+            }] + context +
+            [{
+                "role": "user",
+                "content": user_content
+            }
+        ]
+    )
+
+    prompt =  (response.output[0].content[0].text).split("Product list:")[0].strip() + "(Keep geometry, composition, and lcoation of objects exactly same as image1). (Keep windows, doors, ceiling, floors, and everything else exactly the same as image1)"
+
+    # Send API request
+    response = client.responses.create(
+        model="gpt-4.1",
+        input=[
+            {
+                "role": "user",
+                "content": prompt
+            },
+            {
+                "role": "user",
+                "content": user_content
+            }
+        ],
+        tools=[
+            {
+                "type": "file_search",
+                "vector_store_ids": ["vs_68335a610bd081919da28de14901f537"]
+            },
+            {
+                "type": "image_generation",
+                "size": "auto",
+                "quality": "medium"
+            }
+        ]
+    )
+
+    # Extract image result
+    base64_image = None
+    for item in response.output:
+        if item.type == "image_generation_call" and item.result:
+            base64_image = item.result
+            break
+
+    return base64_image

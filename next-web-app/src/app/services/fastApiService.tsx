@@ -1,10 +1,15 @@
 'use client';
-import { getChatContext, updateChatContext, ChatContextEntry } from '@/app/utils/contextStorage';
 
 interface DesignAgentParams {
+	currentContext?: any
 	prompt?: string;
 	image?: string;
-	reference_images?: string[];
+}
+
+export interface DesignAgentImageParams {
+	context: any;
+	user_image: string;
+	product_image_urls: string[];
 }
 
 interface DesignAgentResponse {
@@ -17,9 +22,9 @@ export class FastAPIService {
 	private readonly BASE_URL = process.env.NEXT_PUBLIC_FAST_API_URL;
 
 	async designAgent({
+		currentContext,
 		image,
-		prompt,
-		reference_images = []
+		prompt
 	}: DesignAgentParams): Promise<DesignAgentResponse> {
 		try {
 			const url = `${this.BASE_URL}/api/v1/design-agent`;
@@ -28,13 +33,10 @@ export class FastAPIService {
 				'Content-Type': 'application/json',
 			};
 
-			const currentContext = getChatContext();
-
 			const requestBody = {
 				"context": currentContext,
 				"user_prompt": prompt,
-				"user_image": image,
-				"reference_images": reference_images.map(img => ({ image_base_64: img }))
+				"user_image": image
 			};
 
 			const options = {
@@ -56,42 +58,63 @@ export class FastAPIService {
 
 			const data = await response.json();
 
-			const newMessage: ChatContextEntry = {
-				role: "user",
-				content: [
-					{
-						type: "input_text",
-						text: prompt
-					},
-					// Add main image if available
-					...(image
-					? [{
-						type: "input_image",
-						image_url: `data:image/jpeg;base64,${image}`
-						}]
-					: []),
-
-					// Add reference images if available
-					...reference_images.map(refImage => ({
-						type: "input_image",
-						image_url: `data:image/jpeg;base64,${refImage}`
-					}))
-				]
-			};
-
-
-			updateChatContext([newMessage]);
-
-			const assistantReply: ChatContextEntry = data.conversation[0];
-
-			updateChatContext([assistantReply]);
-
 			return {
 				success: true,
 				data
 			};
 		} catch (error) {
 			console.error('Error in designAgent:', error);
+			return {
+				success: false,
+				data: null,
+				error: error instanceof Error ? error.message : 'An error occurred'
+			};
+		}
+	}
+
+	async designAgentImage({
+		context,
+		user_image,
+		product_image_urls
+	}: DesignAgentImageParams): Promise<DesignAgentResponse> {
+		try {
+			const url = `${this.BASE_URL}/api/v1/design-agent/generate-image`;
+
+			const requestHeader: Record<string, string> = {
+				'Content-Type': 'application/json',
+			};
+
+			const requestBody = {
+				"context": context,
+				"user_image": user_image,
+				"product_image_urls": product_image_urls
+			};
+
+			const options = {
+				method: 'POST',
+				headers: requestHeader,
+				body: JSON.stringify(requestBody)
+			};
+
+			const response = await fetch(url, options);
+
+			if (response.status === 401) {
+				throw new Error('Authentication required. Please log in to generate images.');
+			}
+
+			if (!response.ok) {
+				const errorText = await response.text();
+				throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+			}
+
+			const data = await response.json();
+
+			return {
+				success: true,
+				data
+			};
+		} catch (error) {
+			console.error('Error in designAgentImage:', error);
 			return {
 				success: false,
 				data: null,
