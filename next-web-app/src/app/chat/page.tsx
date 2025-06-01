@@ -360,37 +360,35 @@ const DesignAgentChat = () => {
         refreshChatSessions();
     };
 
+    // Updated handleImageGeneration function
     const handleImageGeneration = async () => {
-        // Your image generation logic here
-        const conversationWithoutImages = getChatSession(currentSessionId)
-            ?.conversation
-            .map(entry => {
-                if (entry.role === 'user' && Array.isArray(entry.content)) {
-                // Filter out input_image items from user content array
-                const filteredContent = entry.content.filter(c => c.type !== 'input_image');
-                return { ...entry, content: filteredContent };
-                }
-                return entry;
-            });
-
-        const firstImage = getChatSession(currentSessionId)
-            ?.conversation
-            .flatMap(e => e.role === 'user' && Array.isArray(e.content) ? e.content : [])
-            .find(c => c.type === 'input_image')?.image_url;
+        setIsGenerating(true);
         
-
-
         try {
+            // Your image generation logic here
+            const conversationWithoutImages = getChatSession(currentSessionId)
+                ?.conversation
+                .map(entry => {
+                    if (entry.role === 'user' && Array.isArray(entry.content)) {
+                    // Filter out input_image items from user content array
+                    const filteredContent = entry.content.filter(c => c.type !== 'input_image');
+                    return { ...entry, content: filteredContent };
+                    }
+                    return entry;
+                });
+
+            const firstImage = getChatSession(currentSessionId)
+                ?.conversation
+                .flatMap(e => e.role === 'user' && Array.isArray(e.content) ? e.content : [])
+                .find(c => c.type === 'input_image')?.image_url;
+
             const values: DesignAgentImageParams = {
                 context: conversationWithoutImages, // Assuming this is the context you want to pass
                 user_image: firstImage, // Assuming this is the user's image you want to pass
                 product_image_urls: productReferenceImages // Assuming these are the product reference images you want to pass
             };
 
-
-
             const result = await fastApiService.designAgentImage(values);
-
 
             // Extract base64 image from result.data and add to local state only
             if (result?.data) {
@@ -406,6 +404,9 @@ const DesignAgentChat = () => {
             
             // Show error message temporarily in UI (optional)
             alert('Sorry, something went wrong. Please try again.');
+        }
+        finally {
+            setIsGenerating(false);
         }
     };
 
@@ -615,36 +616,82 @@ const DesignAgentChat = () => {
                     <div className="flex items-center justify-between">
                         {/* Left side - Status info */}
                         <div className="flex items-center space-x-4">
-                            <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
-                                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                                isGenerating 
+                                    ? 'bg-gradient-to-r from-yellow-500 to-orange-500' 
+                                    : 'bg-gradient-to-r from-purple-500 to-blue-500'
+                            }`}>
+                                {isGenerating ? (
+                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                ) : (
+                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                )}
                             </div>
                             <div>
-                                <h4 className="text-white font-semibold text-sm">Ready to Generate</h4>
-                                <p className="text-gray-400 text-xs">Room uploaded • Products selected</p>
+                                <h4 className="text-white font-semibold text-sm">
+                                    {isGenerating ? 'Generating Images...' : 'Ready to Generate'}
+                                </h4>
+                                <p className="text-gray-400 text-xs">
+                                    {isGenerating ? 'Creating your furnished room design' : 'Room uploaded • Products selected'}
+                                </p>
                             </div>
                         </div>
 
                         {/* Right side - Generate button */}
                         <button 
                             onClick={handleImageGeneration}
-                            className="group relative px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-lg font-medium text-white transition-all duration-300 transform hover:scale-105 flex items-center space-x-2 shadow-lg hover:shadow-xl">
+                            disabled={isGenerating}
+                            className={`group relative px-6 py-3 rounded-lg font-medium text-white transition-all duration-300 transform flex items-center space-x-2 shadow-lg ${
+                                isGenerating
+                                    ? 'bg-gray-600 cursor-not-allowed'
+                                    : 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 hover:scale-105 hover:shadow-xl'
+                            }`}>
                             <span className="relative z-10 flex items-center space-x-2">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                </svg>
-                                <span>Generate Furnished Room</span>
-                                <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                </svg>
+                                {isGenerating ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        <span>Generating...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                        </svg>
+                                        <span>Generate Furnished Room</span>
+                                        <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                        </svg>
+                                    </>
+                                )}
                             </span>
                             
-                            {/* Gradient overlay on hover */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-purple-700 to-blue-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg"></div>
+                            {/* Gradient overlay on hover - only when not generating */}
+                            {!isGenerating && (
+                                <div className="absolute inset-0 bg-gradient-to-r from-purple-700 to-blue-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg"></div>
+                            )}
                         </button>
                     </div>
                 </div>
+
+                {/* Loading progress indicator */}
+                {isGenerating && (
+                    <div className="mt-3 p-3 bg-gray-800/30 backdrop-blur-sm rounded-lg max-w-2xl border border-gray-700/30">
+                        <div className="flex items-center space-x-3 mb-2">
+                            <div className="w-5 h-5 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                            <span className="text-sm text-gray-300">Processing your design request...</span>
+                        </div>
+                        
+                        <div className="w-full bg-gray-700/50 rounded-full h-2 mb-2">
+                            <div className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full animate-pulse" style={{width: '60%'}}></div>
+                        </div>
+                        
+                        <div className="text-xs text-gray-400">
+                            This may take 30-60 seconds to complete
+                        </div>
+                    </div>
+                )}
             </div>
         )
     };
