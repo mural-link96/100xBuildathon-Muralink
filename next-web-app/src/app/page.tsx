@@ -17,14 +17,15 @@ const DesignAgentLanding = () => {
             <nav className="relative z-10 flex items-center justify-between px-6 py-4">
                 <div className="flex items-center space-x-2">
                     <div className="flex items-center relative">
-                        <Image
+                        {/* <Image
                             src="/images/logo/muralink-logo-white.png"
                             alt="M"
                             width={60}
                             height={60}
                             className="h-14 w-auto transform -translate-x-2"
-                        />
-                        <span className="font-relative-pro text-2xl font-bold transform -translate-x-2 mt-2 ml-[-12px]"><span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-gray-100">uralink</span></span>
+                        /> */}
+                        
+                        <span className="font-relative-pro text-2xl font-bold transform -translate-x-2 mt-2 pl-4 ml-[-12px]"><span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-gray-100">Muralink</span></span>
                     </div>
                     <div className="w-0.5 h-8 bg-white rounded-lg flex items-center justify-center"></div>
                     <div className="flex items-center space-x-2 relative">
