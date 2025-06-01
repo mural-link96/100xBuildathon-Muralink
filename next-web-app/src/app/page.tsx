@@ -17,15 +17,14 @@ const DesignAgentLanding = () => {
             <nav className="relative z-10 flex items-center justify-between px-6 py-4">
                 <div className="flex items-center space-x-2">
                     <div className="flex items-center relative">
-                        {/* <Image
-                            src="/images/logo/muralink-logo-white.png"
+                        <Image
+                            src="/Images/logo/muralink-logo-white.png"
                             alt="M"
                             width={60}
                             height={60}
                             className="h-14 w-auto transform -translate-x-2"
-                        /> */}
-                        
-                        <span className="font-relative-pro text-2xl font-bold transform -translate-x-2 mt-2 pl-4 ml-[-12px]"><span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-gray-100">Muralink</span></span>
+                        />
+                        <span className="font-relative-pro text-2xl font-bold transform -translate-x-2 mt-2 pl-4 ml-[-12px]"><span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-gray-100">uralink</span></span>
                     </div>
                     <div className="w-0.5 h-8 bg-white rounded-lg flex items-center justify-center"></div>
                     <div className="flex items-center space-x-2 relative">
@@ -34,12 +33,10 @@ const DesignAgentLanding = () => {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>
                         </div>
-                        <span className="text-xl font-bold">Tracy</span>
+                        <span className="text-xl font-bold">Saumya</span>
                     </div>
                 </div>
                 <div className="hidden md:flex items-center space-x-8">
-                    <a href="#features" className="text-gray-300 hover:text-white transition-colors">Features</a>
-                    <a href="#about" className="text-gray-300 hover:text-white transition-colors">About</a>
                     <button 
                         onClick={handleGetStarted}
                         className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 px-6 py-2 rounded-full font-medium transition-all duration-300 transform hover:scale-105"
@@ -67,22 +64,21 @@ const DesignAgentLanding = () => {
                             </svg>
                         </div>
                         <div className="inline-block px-4 py-2 bg-gray-800/50 rounded-full backdrop-blur-sm border border-gray-700">
-                            <span className="text-sm text-gray-300">Meet Tracy</span>
+                            <span className="text-sm text-gray-300">Meet Saumya</span>
                         </div>
                     </div>
 
                     {/* Headlines */}
                     <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent leading-tight">
-                        Your AI Design
+                        Your AI Room
                         <br />
                         <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-                            Companion
+                            Designer
                         </span>
                     </h1>
 
                     <p className="text-xl md:text-2xl text-gray-300 mb-12 leading-relaxed max-w-3xl mx-auto">
-                        Transform your ideas into stunning visuals with Tracy, your intelligent design assistant. 
-                        Create, iterate, and perfect your designs through natural conversation.
+                        Design your dream spaces effortlessly with Saumya - your AI-powered interior design agent. Just chat, and watch your vision take shape in real time.
                     </p>
 
                     {/* CTA Buttons */}
@@ -100,14 +96,14 @@ const DesignAgentLanding = () => {
                             <div className="absolute inset-0 bg-gradient-to-r from-purple-700 to-blue-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         </button>
                         
-                        <button className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors group">
+                        <a href="" target="_blank" className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors group">
                             <div className="w-12 h-12 bg-gray-800/50 rounded-full flex items-center justify-center group-hover:bg-gray-700/50 transition-colors">
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </div>
                             <span>Watch Demo</span>
-                        </button>
+                        </a>
                     </div>
 
                     {/* Feature Preview Cards */}
@@ -119,7 +115,7 @@ const DesignAgentLanding = () => {
                                 </svg>
                             </div>
                             <h3 className="text-lg font-semibold mb-2">Natural Conversation</h3>
-                            <p className="text-gray-400 text-sm">Describe your vision in plain English and watch Tracy bring it to life</p>
+                            <p className="text-gray-400 text-sm">Describe your vision in plain English and watch Saumya bring it to life</p>
                         </div>
 
                         <div className="bg-gray-800/30 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 hover:border-blue-500/50 transition-all duration-300 group">
@@ -128,8 +124,8 @@ const DesignAgentLanding = () => {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                                 </svg>
                             </div>
-                            <h3 className="text-lg font-semibold mb-2">Instant Generation</h3>
-                            <p className="text-gray-400 text-sm">From concept to creation in seconds with advanced AI technology</p>
+                            <h3 className="text-lg font-semibold mb-2">Real World Products</h3>
+                            <p className="text-gray-400 text-sm">Integrate real world products in your room before actually buying them</p>
                         </div>
 
                         <div className="bg-gray-800/30 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 hover:border-green-500/50 transition-all duration-300 group">
@@ -138,7 +134,7 @@ const DesignAgentLanding = () => {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                                 </svg>
                             </div>
-                            <h3 className="text-lg font-semibold mb-2">Perfect Results</h3>
+                            <h3 className="text-lg font-semibold mb-2">Instant Perfect Results</h3>
                             <p className="text-gray-400 text-sm">Iterate and refine until your design matches your exact vision</p>
                         </div>
                     </div>

@@ -16,6 +16,7 @@ import {
     type ChatContextEntry
 } from '@/app/utils/chatStorageUtils';
 import { DesignAgentImageParams, fastApiService } from '../services/fastApiService';
+import Image from 'next/image';
 
 // Updated interfaces to match structure.json
 interface ConversationMessage {
@@ -386,6 +387,8 @@ const DesignAgentChat = () => {
                 product_image_urls: productReferenceImages // Assuming these are the product reference images you want to pass
             };
 
+
+
             const result = await fastApiService.designAgentImage(values);
 
 
@@ -427,6 +430,19 @@ const DesignAgentChat = () => {
         }
     };
 
+    const handleQuickRoomSelect = async (imageUrl: string, roomName: string) => {
+        try {
+            const response = await fetch(imageUrl);
+            const blob = await response.blob();
+            const file = new File([blob], `${roomName.toLowerCase().replace(' ', '-')}-room.jpg`, {
+                type: blob.type
+            });
+            setUploadedImage(file);
+        } catch (error) {
+            console.error('Error loading room image:', error);
+        }
+    };
+
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -452,14 +468,14 @@ const DesignAgentChat = () => {
             .join(' ');
     };
 
-    const getMessageImages = (content: string | Array<{type: string; text: string}>): string[] => {
+    const getMessageImages = (content: string | Array<{type: string; image_url: string}>): string[] => {
         if (typeof content === 'string') {
             return [];
         }
         
         return content
             .filter(item => item.type === 'input_image')
-            .map(item => item.text);
+            .map(item => item.image_url);
     };
 
     const handleClearAllChats = () => {
@@ -813,7 +829,7 @@ const DesignAgentChat = () => {
                             </svg>
                         </div>
                         <div>
-                            <h1 className="text-xl font-bold">Tracy</h1>
+                            <h1 className="text-xl font-bold">Saumya</h1>
                             <p className="text-xs text-gray-400">AI Design Assistant</p>
                         </div>
                     </div>
@@ -833,7 +849,7 @@ const DesignAgentChat = () => {
                                     <Bot className="w-8 h-8 text-white" />
                                 </div>
                                 <h3 className="text-xl font-semibold mb-2">Start a New Conversation</h3>
-                                <p className="text-gray-400">Hi! I'm Tracy, your AI design companion. Describe what you want to create and I'll help bring your vision to life.</p>
+                                <p className="text-gray-400">Hi! I'm Saumya, your AI room design companion. Describe what you want to create and I'll help bring your vision to life.</p>
                             </div>
                         </div>
                     ) : (
@@ -995,18 +1011,40 @@ const DesignAgentChat = () => {
 
                         {/* Quick Actions */}
                         <div className="flex flex-wrap items-center gap-2 mt-3">
-                            <span className="text-xs text-gray-500">Quick ideas:</span>
+                            <span className="text-xs text-gray-500">Quick rooms:</span>
                             {[
-                                "Create a modern logo design",
-                                "Generate abstract artwork"
-                            ].map((idea, index) => (
-                                <button
-                                    key={index}
-                                    onClick={() => setPrompt(idea)}
-                                    className="px-3 py-1 text-xs bg-gray-800/30 hover:bg-gray-700/50 text-gray-400 hover:text-gray-300 rounded-full transition-colors"
-                                >
-                                    {idea}
-                                </button>
+                                { name: "Room 1", url: "/Images/sample/rooms/room-001.jpg" },
+                                { name: "Room 2", url: "/Images/sample/rooms/room-002.jpg" },
+                                { name: "Room 3", url: "/Images/sample/rooms/room-003.jpg" },
+                                { name: "Room 4", url: "/Images/sample/rooms/room-004.jpg" },
+                                { name: "Room 5", url: "/Images/sample/rooms/room-005.jpg" }
+                            ].map((room, index) => (
+                                <div key={index} className="relative group">
+                                    <button
+                                        onClick={() => handleQuickRoomSelect(room.url, room.name)}
+                                        className="relative w-16 h-10 bg-gray-800/30 hover:bg-gray-700/50 rounded-full overflow-hidden transition-all duration-200 hover:scale-105 border border-gray-700/50 hover:border-gray-600"
+                                    >
+                                        <img
+                                            src={room.url}
+                                            alt={room.name}
+                                            className="w-full h-full object-cover"
+                                        />
+                                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
+                                    </button>
+                                    
+                                    {/* Hover enlarged image */}
+                                    <div className="absolute bottom-14 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-20" style={{width: '360px'}}>
+                                        <div className="bg-gray-900/90 backdrop-blur-sm rounded-lg p-2 shadow-xl border border-gray-700">
+                                            <img
+                                                src={room.url}
+                                                alt={room.name}
+                                                className="object-cover rounded"
+                                            />
+                                            <div className="text-xs text-white text-center mt-1">{room.name}</div>
+                                        </div>
+                                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-transparent border-t-gray-900/90"></div>
+                                    </div>
+                                </div>
                             ))}
                         </div>
 
