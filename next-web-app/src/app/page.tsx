@@ -96,7 +96,7 @@ const DesignAgentLanding = () => {
                             <div className="absolute inset-0 bg-gradient-to-r from-purple-700 to-blue-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         </button>
                         
-                        <a href="" target="_blank" className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors group">
+                        <a href="https://www.linkedin.com/posts/mura-link_homedecor-interiordesign-aiagents-activity-7335186521118953472-Wl1J/?utm_source=share&utm_medium=member_android&rcm=ACoAAAwPXI0BBQM1ALANED7lu7B5iQmBb2YMJa8" target="_blank" className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors group">
                             <div className="w-12 h-12 bg-gray-800/50 rounded-full flex items-center justify-center group-hover:bg-gray-700/50 transition-colors">
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
