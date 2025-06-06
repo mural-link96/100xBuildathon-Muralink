@@ -18,6 +18,91 @@ import {
 import { DesignAgentImageParams, fastApiService } from '../services/fastApiService';
 import Image from 'next/image';
 
+// IndexedDB utility functions for generated images
+class GeneratedImagesDB {
+    private dbName = 'DesignAgentImages';
+    private version = 1;
+    private storeName = 'generated_images';
+
+    async openDB(): Promise<IDBDatabase> {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(this.dbName, this.version);
+            
+            request.onerror = () => reject(request.error);
+            request.onsuccess = () => resolve(request.result);
+            
+            request.onupgradeneeded = (event) => {
+                const db = (event.target as IDBOpenDBRequest).result;
+                if (!db.objectStoreNames.contains(this.storeName)) {
+                    const store = db.createObjectStore(this.storeName, { keyPath: 'id', autoIncrement: true });
+                    store.createIndex('sessionId', 'sessionId', { unique: false });
+                }
+            };
+        });
+    }
+
+    async saveImage(sessionId: string, base64Image: string): Promise<number> {
+        const db = await this.openDB();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction([this.storeName], 'readwrite');
+            const store = transaction.objectStore(this.storeName);
+            
+            const imageData = {
+                sessionId,
+                base64Image,
+                createdAt: new Date().toISOString()
+            };
+            
+            const request = store.add(imageData);
+            request.onerror = () => reject(request.error);
+            request.onsuccess = () => resolve(request.result as number);
+        });
+    }
+
+    async getImagesBySession(sessionId: string): Promise<{id: number, base64Image: string, createdAt: string}[]> {
+        const db = await this.openDB();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction([this.storeName], 'readonly');
+            const store = transaction.objectStore(this.storeName);
+            const index = store.index('sessionId');
+            
+            const request = index.getAll(sessionId);
+            request.onerror = () => reject(request.error);
+            request.onsuccess = () => resolve(request.result);
+        });
+    }
+
+    async deleteImage(imageId: number): Promise<void> {
+        const db = await this.openDB();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction([this.storeName], 'readwrite');
+            const store = transaction.objectStore(this.storeName);
+            
+            const request = store.delete(imageId);
+            request.onerror = () => reject(request.error);
+            request.onsuccess = () => resolve();
+        });
+    }
+
+    async deleteImagesBySession(sessionId: string): Promise<void> {
+        const images = await this.getImagesBySession(sessionId);
+        const deletePromises = images.map(img => this.deleteImage(img.id));
+        await Promise.all(deletePromises);
+    }
+
+    async clearAllImages(): Promise<void> {
+        const db = await this.openDB();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction([this.storeName], 'readwrite');
+            const store = transaction.objectStore(this.storeName);
+            
+            const request = store.clear();
+            request.onerror = () => reject(request.error);
+            request.onsuccess = () => resolve();
+        });
+    }
+}
+
 // Updated interfaces to match structure.json
 interface ConversationMessage {
     role: 'user' | 'assistant';
@@ -46,25 +131,33 @@ interface ShoppingItem {
     link: string;
 }
 
+interface GeneratedImage {
+    id: number;
+    base64Image: string;
+    createdAt: string;
+}
+
 const DesignAgentChat = () => {
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [prompt, setPrompt] = useState('');
     const [uploadedImage, setUploadedImage] = useState<File | null>(null);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [isGeneratingImage, setIsGeneratingImage] = useState(false);
     const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
     const [currentSessionId, setCurrentSessionId] = useState<string>('');
     const [products, setProducts] = useState<Product[]>([]);
     const [selectedItems, setSelectedItems] = useState<{[productIndex: number]: number}>({});
     const [productReferenceImages, setProductReferenceImages] = useState<string[]>([]);
-    const [generatedImages, setGeneratedImages] = useState<string[]>([]);
+    const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
     const [expandedImage, setExpandedImage] = useState<string | null>(null);
     
     const fileInputRef = useRef<HTMLInputElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const imagesDB = useRef(new GeneratedImagesDB());
 
     // Load chat sessions from localStorage on mount
     useEffect(() => {
-        const loadChatSessions = () => {
+        const loadChatSessions = async () => {
             const sessions = getAllChatSessions();
             setChatSessions(sessions);
             
@@ -78,12 +171,24 @@ const DesignAgentChat = () => {
                 if (firstSession.products) {
                     setProducts(firstSession.products);
                 }
-                // Don't load generated images from localStorage - let them be session-only
+                // Load generated images from IndexedDB
+                await loadGeneratedImages(sessions[0].sessionId);
             }
         };
         
         loadChatSessions();
     }, []);
+
+    // Load generated images from IndexedDB for a specific session
+    const loadGeneratedImages = async (sessionId: string) => {
+        try {
+            const images = await imagesDB.current.getImagesBySession(sessionId);
+            setGeneratedImages(images);
+        } catch (error) {
+            console.error('Error loading generated images:', error);
+            setGeneratedImages([]);
+        }
+    };
 
     // Refresh chat sessions when they change
     const refreshChatSessions = () => {
@@ -132,7 +237,7 @@ const DesignAgentChat = () => {
         refreshChatSessions();
         setCurrentSessionId(sessionId);
         setProducts([]);
-        setGeneratedImages([]); // Clear generated images when creating new chat
+        setGeneratedImages([]);
         setSelectedItems({});
         setProductReferenceImages([]);
         setPrompt('');
@@ -143,27 +248,38 @@ const DesignAgentChat = () => {
         }
     };
 
-    const deleteChat = (sessionId: string, e: React.MouseEvent) => {
+    const deleteChat = async (sessionId: string, e: React.MouseEvent) => {
         e.stopPropagation();
         const sessions = getAllChatSessions();
         
         if (sessions.length > 1) {
-            // Delete from localStorage
-            deleteChatSession(sessionId);
-            
-            // Update local state
-            refreshChatSessions();
-            
-            if (currentSessionId === sessionId) {
-                const remainingSessions = getAllChatSessions();
-                setCurrentSessionId(remainingSessions[0]?.sessionId || '');
-                // Clear generated images when switching away from deleted chat
-                setGeneratedImages([]);
+            try {
+                // Delete generated images from IndexedDB
+                await imagesDB.current.deleteImagesBySession(sessionId);
+                
+                // Delete from localStorage
+                deleteChatSession(sessionId);
+                
+                // Update local state
+                refreshChatSessions();
+                
+                if (currentSessionId === sessionId) {
+                    const remainingSessions = getAllChatSessions();
+                    const newSessionId = remainingSessions[0]?.sessionId || '';
+                    setCurrentSessionId(newSessionId);
+                    if (newSessionId) {
+                        await loadGeneratedImages(newSessionId);
+                    } else {
+                        setGeneratedImages([]);
+                    }
+                }
+            } catch (error) {
+                console.error('Error deleting chat session:', error);
             }
         }
     };
 
-    const switchToChat = (sessionId: string) => {
+    const switchToChat = async (sessionId: string) => {
         setCurrentSessionId(sessionId);
         const session = getChatSession(sessionId);
         if (session) {
@@ -172,8 +288,8 @@ const DesignAgentChat = () => {
             } else {
                 setProducts([]);
             }
-            // Clear generated images when switching chats - they're session-only now
-            setGeneratedImages([]);
+            // Load generated images from IndexedDB for this session
+            await loadGeneratedImages(sessionId);
         } else {
             setProducts([]);
             setGeneratedImages([]);
@@ -313,7 +429,6 @@ const DesignAgentChat = () => {
 
             const result = await fastApiService.designAgent(values);
 
-
             const assistantMessage = getAssistantMessage(result);
             const extractedProducts = getProducts(result);
             
@@ -362,7 +477,7 @@ const DesignAgentChat = () => {
 
     // Updated handleImageGeneration function
     const handleImageGeneration = async () => {
-        setIsGenerating(true);
+        setIsGeneratingImage(true);
         
         try {
             // Your image generation logic here
@@ -383,17 +498,33 @@ const DesignAgentChat = () => {
                 .find(c => c.type === 'input_image')?.image_url;
 
             const values: DesignAgentImageParams = {
-                context: conversationWithoutImages, // Assuming this is the context you want to pass
-                user_image: firstImage, // Assuming this is the user's image you want to pass
-                product_image_urls: productReferenceImages // Assuming these are the product reference images you want to pass
+                context: conversationWithoutImages,
+                user_image: firstImage,
+                product_image_urls: productReferenceImages
             };
 
             const result = await fastApiService.designAgentImage(values);
 
-            // Extract base64 image from result.data and add to local state only
+            // Extract base64 image from result.data and save to IndexedDB
             if (result?.data) {
-                // Add the generated image to local state only (not persisted)
-                setGeneratedImages(prev => [...prev, result.data]);
+                try {
+                    const imageId = await imagesDB.current.saveImage(currentSessionId, result.data);
+                    const newImage: GeneratedImage = {
+                        id: imageId,
+                        base64Image: result.data,
+                        createdAt: new Date().toISOString()
+                    };
+                    setGeneratedImages(prev => [...prev, newImage]);
+                } catch (error) {
+                    console.error('Error saving generated image to IndexedDB:', error);
+                    // Fallback to local state only if IndexedDB fails
+                    const newImage: GeneratedImage = {
+                        id: Date.now(), // Fallback ID
+                        base64Image: result.data,
+                        createdAt: new Date().toISOString()
+                    };
+                    setGeneratedImages(prev => [...prev, newImage]);
+                }
             }
         }
         catch (err) {
@@ -406,13 +537,21 @@ const DesignAgentChat = () => {
             alert('Sorry, something went wrong. Please try again.');
         }
         finally {
-            setIsGenerating(false);
+            setIsGeneratingImage(false);
         }
     };
 
-    const handleDeleteGeneratedImage = (index: number) => {
-        // Simply remove from local state - no localStorage persistence
-        setGeneratedImages(prev => prev.filter((_, i) => i !== index));
+    const handleDeleteGeneratedImage = async (imageId: number, index: number) => {
+        try {
+            // Delete from IndexedDB
+            await imagesDB.current.deleteImage(imageId);
+            // Remove from local state
+            setGeneratedImages(prev => prev.filter((_, i) => i !== index));
+        } catch (error) {
+            console.error('Error deleting generated image:', error);
+            // Fallback to local state removal only
+            setGeneratedImages(prev => prev.filter((_, i) => i !== index));
+        }
     };
 
     const handleDownloadImage = (base64Image: string, index: number) => {
@@ -479,7 +618,14 @@ const DesignAgentChat = () => {
             .map(item => item.image_url);
     };
 
-    const handleClearAllChats = () => {
+    const handleClearAllChats = async () => {
+        try {
+            // Clear all generated images from IndexedDB
+            await imagesDB.current.clearAllImages();
+        } catch (error) {
+            console.error('Error clearing images from IndexedDB:', error);
+        }
+        
         clearAllChatSessions();
         setChatSessions([]);
         setCurrentSessionId('');
@@ -613,15 +759,15 @@ const DesignAgentChat = () => {
         return (
             <div>
                 <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl max-w-2xl border border-gray-700/50 mt-4 p-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-8">
                         {/* Left side - Status info */}
                         <div className="flex items-center space-x-4">
                             <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                                isGenerating 
+                                isGeneratingImage 
                                     ? 'bg-gradient-to-r from-yellow-500 to-orange-500' 
                                     : 'bg-gradient-to-r from-purple-500 to-blue-500'
                             }`}>
-                                {isGenerating ? (
+                                {isGeneratingImage ? (
                                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                                 ) : (
                                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -631,10 +777,10 @@ const DesignAgentChat = () => {
                             </div>
                             <div>
                                 <h4 className="text-white font-semibold text-sm">
-                                    {isGenerating ? 'Generating Images...' : 'Ready to Generate'}
+                                    {isGeneratingImage ? 'Generating Images...' : 'Ready to Generate'}
                                 </h4>
                                 <p className="text-gray-400 text-xs">
-                                    {isGenerating ? 'Creating your furnished room design' : 'Room uploaded • Products selected'}
+                                    {isGeneratingImage ? 'Creating your furnished room design' : 'Room uploaded • Products selected'}
                                 </p>
                             </div>
                         </div>
@@ -642,14 +788,14 @@ const DesignAgentChat = () => {
                         {/* Right side - Generate button */}
                         <button 
                             onClick={handleImageGeneration}
-                            disabled={isGenerating}
+                            disabled={isGeneratingImage}
                             className={`group relative px-6 py-3 rounded-lg font-medium text-white transition-all duration-300 transform flex items-center space-x-2 shadow-lg ${
-                                isGenerating
+                                isGeneratingImage
                                     ? 'bg-gray-600 cursor-not-allowed'
                                     : 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 hover:scale-105 hover:shadow-xl'
                             }`}>
                             <span className="relative z-10 flex items-center space-x-2">
-                                {isGenerating ? (
+                                {isGeneratingImage ? (
                                     <>
                                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                                         <span>Generating...</span>
@@ -668,7 +814,7 @@ const DesignAgentChat = () => {
                             </span>
                             
                             {/* Gradient overlay on hover - only when not generating */}
-                            {!isGenerating && (
+                            {!isGeneratingImage && (
                                 <div className="absolute inset-0 bg-gradient-to-r from-purple-700 to-blue-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg"></div>
                             )}
                         </button>
@@ -676,15 +822,11 @@ const DesignAgentChat = () => {
                 </div>
 
                 {/* Loading progress indicator */}
-                {isGenerating && (
+                {isGeneratingImage && (
                     <div className="mt-3 p-3 bg-gray-800/30 backdrop-blur-sm rounded-lg max-w-2xl border border-gray-700/30">
                         <div className="flex items-center space-x-3 mb-2">
                             <div className="w-5 h-5 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
                             <span className="text-sm text-gray-300">Processing your design request...</span>
-                        </div>
-                        
-                        <div className="w-full bg-gray-700/50 rounded-full h-2 mb-2">
-                            <div className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full animate-pulse" style={{width: '60%'}}></div>
                         </div>
                         
                         <div className="text-xs text-gray-400">
@@ -711,34 +853,34 @@ const DesignAgentChat = () => {
                 </h3>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {generatedImages.map((base64Image, index) => (
-                        <div key={index} className="relative group">
+                    {generatedImages.map((image, index) => (
+                        <div key={image.id} className="relative group">
                             <div className="relative bg-gray-700/30 rounded-lg overflow-hidden border border-gray-600/30 hover:border-gray-500 transition-colors">
                                 <img
-                                    src={`data:image/png;base64,${base64Image}`}
+                                    src={`data:image/png;base64,${image.base64Image}`}
                                     alt={`Generated image ${index + 1}`}
                                     className="w-full h-auto object-cover cursor-pointer"
-                                    onClick={() => setExpandedImage(`data:image/png;base64,${base64Image}`)}
+                                    onClick={() => setExpandedImage(`data:image/png;base64,${image.base64Image}`)}
                                 />
                                 
                                 {/* Action buttons overlay */}
                                 <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
                                     <button
-                                        onClick={() => setExpandedImage(`data:image/png;base64,${base64Image}`)}
+                                        onClick={() => setExpandedImage(`data:image/png;base64,${image.base64Image}`)}
                                         className="bg-black/60 hover:bg-black/80 text-white p-2 rounded"
                                         title="Expand image"
                                     >
                                         <Expand className="w-4 h-4" />
                                     </button>
                                     <button
-                                        onClick={() => handleDownloadImage(base64Image, index)}
+                                        onClick={() => handleDownloadImage(image.base64Image, index)}
                                         className="bg-black/60 hover:bg-black/80 text-white p-2 rounded"
                                         title="Download image"
                                     >
                                         <Download className="w-4 h-4" />
                                     </button>
                                     <button
-                                        onClick={() => handleDeleteGeneratedImage(index)}
+                                        onClick={() => handleDeleteGeneratedImage(image.id, index)}
                                         className="bg-red-600/80 hover:bg-red-600 text-white p-2 rounded"
                                         title="Delete image"
                                     >
@@ -948,15 +1090,15 @@ const DesignAgentChat = () => {
                                                     <pre className="text-sm text-wrap leading-relaxed">{messageText}</pre>
                                                 </div>
 
-                                                {/* Products Selection UI */}
-                                                {showProducts && !isGenerating && (
+                                                {/* Products Selection UI - Show even during image generation */}
+                                                {showProducts && (
                                                     <ProductsSelectionUI />
                                                 )}
-                                                {showProducts && !isGenerating && (
+                                                {showProducts && (
                                                     <GenerateFromProductsUI />
                                                 )}
                                                 {/* Generated Images UI */}
-                                                {showProducts && !isGenerating && (
+                                                {showProducts && (
                                                     <GeneratedImagesUI />
                                                 )}
                                             </div>
