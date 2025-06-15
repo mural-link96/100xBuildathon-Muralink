@@ -2,8 +2,14 @@ fastapi
 uvicorn[standard]
 openai
 numpy
-pydantic
+pydantic[email]
+pydantic_settings
 requests
 python-dotenv
 Pillow
 google-search-results
+pymongo
+motor
+google-auth
+passlib
+python-jose

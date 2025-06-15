@@ -1,6 +1,6 @@
 # main.py
 from fastapi import FastAPI
-from fast_api_server.routers import image_processing
+from fast_api_server.routers import google_auth, image_processing
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
@@ -37,3 +37,4 @@ app.add_middleware(
 
 # Include the router
 app.include_router(image_processing.router)
+app.include_router(google_auth.router)
