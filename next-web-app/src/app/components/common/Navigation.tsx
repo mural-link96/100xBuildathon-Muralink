@@ -89,7 +89,7 @@ const Navigation: React.FC<NavigationProps> = ({ onTryNow, onScrollTo }) => {
               Testimonial
             </button>
             <Button size="sm" variant="primary" onClick={onTryNow}>
-              Try Now
+              Sign up
             </Button>
           </div>
 
