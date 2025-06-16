@@ -47,7 +47,7 @@ const Navigation: React.FC<NavigationProps> = ({ onTryNow, onScrollTo }) => {
         <div className="max-w-7xl mx-auto px-4 md:px-6 flex justify-between items-center">
           <div className="flex items-center relative h-18">
             <Image
-              src="/images/logos/muralink-logo.png"
+              src={ isScrolled ? '/images/logos/muralink-logo.png' : '/images/logos/muralink-logo-white.png'}
               alt="Muralink Logo"
               width={80}
               height={80}
@@ -56,7 +56,11 @@ const Navigation: React.FC<NavigationProps> = ({ onTryNow, onScrollTo }) => {
               quality={100}
             />
             <span className="font-relative-pro text-3xl font-bold transform -translate-x-2 mt-4 ml-[-15px]">
-              <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+              <span className={`transition-all duration-300 ${
+                isScrolled 
+                  ? 'text-indigo-600 font-bold' 
+                  : 'text-white'
+              }`}>
                 uralink
               </span>
             </span>
@@ -66,13 +70,21 @@ const Navigation: React.FC<NavigationProps> = ({ onTryNow, onScrollTo }) => {
           <div className="hidden md:flex items-center space-x-6">
             <button
               onClick={() => scrollToSection('how-it-works')}
-              className="text-gray-700 hover:text-indigo-600 transition-colors"
+              className={`transition-all duration-300 ${
+                isScrolled 
+                  ? 'text-gray-700 hover:text-indigo-600' 
+                  : 'text-white hover:text-gray-200'
+              }`}
             >
               About
             </button>
             <button
               onClick={() => scrollToSection('testimonials')}
-              className="text-gray-700 hover:text-indigo-600 transition-colors"
+              className={`transition-all duration-300 ${
+                isScrolled 
+                  ? 'text-gray-700 hover:text-indigo-600' 
+                  : 'text-white hover:text-gray-200'
+              }`}
             >
               Testimonial
             </button>
@@ -86,15 +98,15 @@ const Navigation: React.FC<NavigationProps> = ({ onTryNow, onScrollTo }) => {
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="md:hidden flex flex-col justify-center items-center w-8 h-8 space-y-1 group cursor-pointer"
           >
-            <span className={`w-6 h-0.5 bg-gray-700 transition-all duration-300 ${
-              isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''
-            }`}></span>
-            <span className={`w-6 h-0.5 bg-gray-700 transition-all duration-300 ${
-              isMobileMenuOpen ? 'opacity-0' : ''
-            }`}></span>
-            <span className={`w-6 h-0.5 bg-gray-700 transition-all duration-300 ${
-              isMobileMenuOpen ? '-rotate-45 -translate-y-1' : ''
-            }`}></span>
+            <span className={`w-6 h-0.5 transition-all duration-300 ${
+              isScrolled ? 'bg-gray-700' : 'bg-white'
+            } ${isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
+            <span className={`w-6 h-0.5 transition-all duration-300 ${
+              isScrolled ? 'bg-gray-700' : 'bg-white'
+            } ${isMobileMenuOpen ? 'opacity-0' : ''}`}></span>
+            <span className={`w-6 h-0.5 transition-all duration-300 ${
+              isScrolled ? 'bg-gray-700' : 'bg-white'
+            } ${isMobileMenuOpen ? '-rotate-45 -translate-y-1' : ''}`}></span>
           </button>
         </div>
       </nav>

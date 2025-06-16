@@ -117,12 +117,12 @@ const HomePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation onTryNow={handleTryNow} onScrollTo={scrollToSection} />
-      <HeroSection onTryNow={handleTryNow} />
+      <HeroSection/>
       <FullPageVideoSection />
       <HowItWorksSection />
       <TestimonialsSection />
       <PreLaunchSection/>
-      <CTASection onTryNow={handleTryNow} />
+      <CTASection />
       <Footer />
     </div>
   );

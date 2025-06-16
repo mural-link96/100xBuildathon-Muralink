@@ -1,8 +1,21 @@
 import { Sparkles } from "lucide-react";
+import { useState } from "react";
 import { FadeInUp } from "../common/animations";
 import Button from "../common/Button";
+import { PreLaunchModal } from "./prelaunchmodal";
 
-export const CTASection: React.FC<{ onTryNow: () => void }> = ({ onTryNow }) => {
+
+export const CTASection: React.FC = () => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const handleTryNow = () => {
+      setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+      setIsModalOpen(false);
+    };
+
     return (
       <section className="py-16 md:py-24 px-4 md:px-6">
         <FadeInUp>
@@ -27,17 +40,23 @@ export const CTASection: React.FC<{ onTryNow: () => void }> = ({ onTryNow }) => 
                   Join thousands of happy customers who've created their dream homes with our magical touch
                 </p>
                 <Button
-                  onClick={onTryNow}
+                  onClick={handleTryNow}
                   variant="primary"
                   size="lg"
                   className="bg-white text-indigo-600 hover:bg-gray-100 hover:scale-110 transition-all duration-300 shadow-xl hover:shadow-2xl"
                 >
-                 <span> <Sparkles className="w-5 h-5 mr-2" /> Start Your Magical Journey </span>
+                 <span>Start Your Magical Journey </span>
                 </Button>
               </div>
             </div>
           </div>
         </FadeInUp>
+
+        {/* PreLaunch Modal */}
+        <PreLaunchModal 
+          isOpen={isModalOpen} 
+          onClose={handleCloseModal} 
+        />
       </section>
     );
   };
