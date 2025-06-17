@@ -30,7 +30,7 @@ const DESIGN_STEPS: DesignStep[] = [
       number: "03",
       title: "Shop & Transform",
       desc: "Purchase curated items and watch your space come to life",
-      image: "https://images.unsplash.com/photo-1565538810643-b5bdb714032a?w=600&h=400&fit=crop",
+      image: "images/how-it-works/003.jpg",
       color: "bg-gradient-to-br from-purple-500 to-pink-500"
     }
   ];
@@ -54,13 +54,12 @@ const DESIGN_STEPS: DesignStep[] = [
  const StepImage: React.FC<StepProps> = ({ step }) => (
     <div className="w-full sm:w-1/2 lg:w-1/2">
       <div className="relative group">
-        <div className="absolute -inset-1 bg-gradient-to-r from-pink-600 to-purple-600 rounded-2xl blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
+        <div className="absolute -inset-1 rounded-2xl blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
         <img
           src={step.image}
           alt={step.title}
           className="relative w-full h-64 sm:h-72 lg:h-80 object-cover rounded-xl shadow-2xl group-hover:shadow-3xl transition-all duration-700 group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
         <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-x-4 group-hover:translate-x-0">
           <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
             <Sparkles className="w-6 h-6 text-white" />
