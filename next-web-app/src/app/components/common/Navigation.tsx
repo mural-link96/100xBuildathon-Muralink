@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Button from './Button';
+import { PreLaunchModal } from '../home/prelaunchmodal';
 
 interface NavigationProps {
   onTryNow?: () => void;
@@ -13,6 +14,15 @@ interface NavigationProps {
 const Navigation: React.FC<NavigationProps> = ({ onTryNow, onScrollTo }) => {
   const [isScrolled, setIsScrolled] = useState<boolean>(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleTryNow = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
 
   useEffect(() => {
     const handleScroll = (): void => {
@@ -88,7 +98,7 @@ const Navigation: React.FC<NavigationProps> = ({ onTryNow, onScrollTo }) => {
             >
               Testimonial
             </button>
-            <Button size="sm" variant="primary" onClick={onTryNow}>
+            <Button size="sm" variant="primary" onClick={handleTryNow}>
               Sign up
             </Button>
           </div>
@@ -134,7 +144,7 @@ const Navigation: React.FC<NavigationProps> = ({ onTryNow, onScrollTo }) => {
               </button>
               <div className="pt-2 border-t border-gray-200">
                 <Button
-                  onClick={() => handleMobileMenuClick(onTryNow || (() => {}))}
+                  onClick={() => handleMobileMenuClick(handleTryNow || (() => {}))}
                   size="sm"
                   variant="primary"
                   className="w-full"
@@ -146,6 +156,11 @@ const Navigation: React.FC<NavigationProps> = ({ onTryNow, onScrollTo }) => {
           </div>
         </div>
       )}
+      {/* PreLaunch Modal */}
+        <PreLaunchModal 
+          isOpen={isModalOpen} 
+          onClose={handleCloseModal} 
+      />
     </>
   );
 };
