@@ -53,7 +53,7 @@ export const HeroSection: React.FC = () => {
                 
                 {/* Tertiary accent brush */}
                 <div 
-                  className="absolute -bottom-6 -left-6 w-48 h-24 bg-gradient-to-r from-pink-500/25 to-orange-500/25 backdrop-blur-sm"
+                  className="absolute -bottom-6 -left-6 w-48 h-16 md:h-24 bg-gradient-to-r from-pink-500/25 to-orange-500/25 backdrop-blur-sm"
                   style={{
                     clipPath: "polygon(0% 20%, 80% 0%, 100% 80%, 20% 100%)",
                     transform: "rotate(12deg)"
@@ -81,20 +81,13 @@ export const HeroSection: React.FC = () => {
 
         <div className="relative z-10 max-w-7xl mx-auto text-center">
           <FadeInUp>
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 leading-tight drop-shadow-lg">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-8 leading-tight drop-shadow-lg">
               <span className="text-gray-900 drop-shadow-sm">Personalized Interior</span>
               <br />
-              <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent drop-shadow-lg">
-                Design Magic
+              <span className="text-indigo-600 drop-shadow-lg">
+                Design
               </span>
             </h1>
-          </FadeInUp>
-
-          <FadeInUp delay={200}>
-            <p className="text-xl md:text-2xl text-gray-800 mb-10 max-w-3xl mx-auto leading-relaxed drop-shadow-sm">
-              Transform your space with AI-powered designs tailored just for you.
-              <span className="font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent"> Because you deserve the extraordinary.</span>
-            </p>
           </FadeInUp>
 
           <FadeInUp delay={400}>
