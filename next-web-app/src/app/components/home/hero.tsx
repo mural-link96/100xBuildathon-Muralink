@@ -98,7 +98,7 @@ export const HeroSection: React.FC = () => {
                 size="lg"
                 className="w-full sm:w-auto transform hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl backdrop-blur-sm"
               >
-                <span> Start Your Transformation</span> 
+                <span> Prelaunch Sign up</span> 
               </Button>
             </div>
           </FadeInUp>

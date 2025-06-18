@@ -36,9 +36,6 @@ export const CTASection: React.FC = () => {
                 <h2 className="text-3xl md:text-5xl font-bold mb-6 leading-tight">
                   Ready to Transform Your Space?
                 </h2>
-                <p className="text-xl md:text-2xl mb-10 opacity-95 leading-relaxed max-w-3xl mx-auto">
-                  Join thousands of happy customers who've created their dream homes with our magical touch
-                </p>
                 <Button
                   onClick={handleTryNow}
                   variant="primary"

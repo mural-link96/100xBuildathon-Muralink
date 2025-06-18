@@ -84,7 +84,7 @@ export const PreLaunchModal: React.FC<PreLaunchModalProps> = ({ isOpen, onClose 
                 <Sparkles className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                Start Your Transformation
+              Prelaunch Sign up
               </h3>
               <p className="text-gray-600">
                 Be the first to experience AI-powered interior design magic

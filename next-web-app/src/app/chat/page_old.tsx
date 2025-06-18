@@ -150,25 +150,10 @@ const DesignAgentChat = () => {
     const [productReferenceImages, setProductReferenceImages] = useState<string[]>([]);
     const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
     const [expandedImage, setExpandedImage] = useState<string | null>(null);
-    const [isMobile, setIsMobile] = useState(false);
     
     const fileInputRef = useRef<HTMLInputElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const imagesDB = useRef(new GeneratedImagesDB());
-
-    // Check if mobile screen
-    useEffect(() => {
-        const checkMobile = () => {
-            setIsMobile(window.innerWidth < 1024);
-            if (window.innerWidth < 1024) {
-                setSidebarOpen(false);
-            }
-        };
-        
-        checkMobile();
-        window.addEventListener('resize', checkMobile);
-        return () => window.removeEventListener('resize', checkMobile);
-    }, []);
 
     // Load chat sessions from localStorage on mount
     useEffect(() => {
@@ -308,11 +293,6 @@ const DesignAgentChat = () => {
         } else {
             setProducts([]);
             setGeneratedImages([]);
-        }
-        
-        // Close sidebar on mobile after selecting
-        if (isMobile) {
-            setSidebarOpen(false);
         }
     };
 
@@ -662,53 +642,52 @@ const DesignAgentChat = () => {
         }
 
         return (
-            <div className="mt-6 p-6 bg-white rounded-2xl shadow-lg border border-gray-100 max-w-2xl">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                    <svg className="w-5 h-5 mr-3" style={{ color: '#5045e6' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="mt-4 p-4 bg-gray-800/20 backdrop-blur-sm rounded-xl max-w-2xl border border-gray-700/30">
+                <h3 className="text-sm font-semibold text-white mb-3 flex items-center">
+                    <svg className="w-4 h-4 mr-2 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                     </svg>
                     Recommended Products
                 </h3>
                 
-                <div className="space-y-5">
+                <div className="space-y-4">
                     {products.map((product, productIndex) => {
                         if (!product.shopping_search?.shopping_results || product.shopping_search.shopping_results.length === 0) {
                             return null;
                         }
 
                         return (
-                            <div key={productIndex} className="space-y-3">
-                                <h4 className="text-sm font-medium text-gray-700">
+                            <div key={productIndex} className="space-y-2">
+                                <h4 className="text-xs font-medium text-gray-300">
                                     Product {productIndex + 1}
                                     {product.name && (
-                                        <span className="text-sm text-gray-500 ml-2">({product.name})</span>
+                                        <span className="text-xs text-gray-400 ml-1">({product.name})</span>
                                     )}
-                                    <span className="text-xs text-gray-400 ml-2">
+                                    <span className="text-xs text-gray-500 ml-2">
                                         ({product.shopping_search.shopping_results.length} options)
                                     </span>
                                 </h4>
                                 
-                                <div className="flex gap-3 pb-3 px-1 py-2 w-full overflow-x-auto">
+                                <div 
+                                    className="flex gap-3 pb-2 px-1 py-2 w-full overflow-x-auto"
+                                >
                                     {product.shopping_search.shopping_results.map((item, itemIndex) => {
                                         const isSelected = selectedItems[productIndex] === itemIndex;
                                         
                                         return (
                                             <div
                                                 key={item.id || itemIndex}
-                                                className={`relative group cursor-pointer transition-all duration-200 transform rounded-xl hover:scale-105 flex-shrink-0 w-24 sm:w-28 ${
+                                                className={`relative group cursor-pointer transition-all duration-200 transform rounded-lg hover:scale-105 flex-shrink-0 w-20 sm:w-24 ${
                                                     isSelected 
-                                                        ? 'ring-2 ring-purple-500 shadow-lg' 
-                                                        : 'hover:ring-1 hover:ring-gray-300'
+                                                        ? 'ring-2 ring-purple-400 shadow-sm shadow-purple-400/25' 
+                                                        : 'hover:ring-1 hover:ring-gray-400'
                                                 }`}
-                                                style={{
-                                                    boxShadow: isSelected ? '0 10px 25px rgba(80, 69, 230, 0.15)' : undefined
-                                                }}
                                                 onClick={() => handleProductSelection(productIndex, itemIndex)}
                                             >
-                                                <div className={`relative bg-white rounded-xl overflow-hidden border-2 transition-colors ${
+                                                <div className={`relative bg-gray-700/30 rounded-lg overflow-hidden border transition-colors ${
                                                     isSelected 
-                                                        ? 'bg-blue-50 border-purple-500' 
-                                                        : 'border-gray-200 hover:border-gray-300'
+                                                        ? 'border-purple-400 bg-purple-900/10' 
+                                                        : 'border-gray-600/30 hover:border-gray-500'
                                                 }`}>
                                                     <div className="aspect-square relative">
                                                         <img
@@ -719,12 +698,9 @@ const DesignAgentChat = () => {
                                                         />
                                                         
                                                         {isSelected && (
-                                                            <div className="absolute top-2 right-2">
-                                                                <div 
-                                                                    className="w-5 h-5 rounded-full flex items-center justify-center text-white"
-                                                                    style={{ backgroundColor: '#5045e6' }}
-                                                                >
-                                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <div className="absolute top-1 right-1">
+                                                                <div className="w-4 h-4 bg-purple-500 rounded-full flex items-center justify-center">
+                                                                    <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                                                                     </svg>
                                                                 </div>
@@ -736,24 +712,24 @@ const DesignAgentChat = () => {
                                                                 e.stopPropagation();
                                                                 window.open(item.link, '_blank');
                                                             }}
-                                                            className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 hover:bg-black/80 text-white p-1.5 rounded-lg"
+                                                            className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 hover:bg-black/80 text-white p-1 rounded"
                                                             title="View product"
                                                         >
-                                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                                                             </svg>
                                                         </button>
                                                     </div>
                                                     
-                                                    <div className="px-2 py-2">
-                                                        <div className="text-sm font-semibold text-gray-800 truncate text-center">
+                                                    <div className="px-1.5 py-1">
+                                                        <div className="text-xs font-medium text-white truncate text-center">
                                                             {item.price}
                                                         </div>
                                                     </div>
                                                 </div>
                                                 
-                                                <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
-                                                    <div className="bg-gray-900 text-white text-xs px-3 py-2 rounded-lg whitespace-nowrap max-w-36 truncate shadow-lg">
+                                                <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
+                                                    <div className="bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap max-w-32 truncate">
                                                         {item.name}
                                                     </div>
                                                     <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-transparent border-t-gray-900"></div>
@@ -767,8 +743,8 @@ const DesignAgentChat = () => {
                     })}
                 </div>
                 
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                    <div className="text-sm text-gray-600">
+                <div className="mt-3 pt-2 border-t border-gray-700/30">
+                    <div className="text-xs text-gray-400">
                         Selected: {Object.keys(selectedItems).length} of {products.filter(p => p.shopping_search?.shopping_results?.length > 0).length} products
                     </div>
                 </div>
@@ -782,33 +758,28 @@ const DesignAgentChat = () => {
         }
         return (
             <div>
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 max-w-2xl mt-6 p-6">
+                <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl max-w-2xl border border-gray-700/50 mt-4 p-4">
                     <div className="flex items-center justify-between gap-8">
                         {/* Left side - Status info */}
                         <div className="flex items-center space-x-4">
-                            <div 
-                                className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                                    isGeneratingImage 
-                                        ? 'bg-gradient-to-r from-yellow-400 to-orange-500' 
-                                        : 'bg-gradient-to-r from-green-400 to-green-600'
-                                }`}
-                                style={{
-                                    background: !isGeneratingImage ? `linear-gradient(135deg, #5045e6, #7c3aed)` : undefined
-                                }}
-                            >
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                                isGeneratingImage 
+                                    ? 'bg-gradient-to-r from-yellow-500 to-orange-500' 
+                                    : 'bg-gradient-to-r from-purple-500 to-blue-500'
+                            }`}>
                                 {isGeneratingImage ? (
-                                    <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                                 ) : (
-                                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                     </svg>
                                 )}
                             </div>
                             <div>
-                                <h4 className="text-gray-800 font-semibold text-base">
+                                <h4 className="text-white font-semibold text-sm">
                                     {isGeneratingImage ? 'Generating Images...' : 'Ready to Generate'}
                                 </h4>
-                                <p className="text-gray-600 text-sm">
+                                <p className="text-gray-400 text-xs">
                                     {isGeneratingImage ? 'Creating your furnished room design' : 'Room uploaded • Products selected'}
                                 </p>
                             </div>
@@ -818,15 +789,11 @@ const DesignAgentChat = () => {
                         <button 
                             onClick={handleImageGeneration}
                             disabled={isGeneratingImage}
-                            className={`group relative px-6 py-3 rounded-xl font-medium text-white transition-all duration-300 transform flex items-center space-x-2 shadow-lg ${
+                            className={`group relative px-6 py-3 rounded-lg font-medium text-white transition-all duration-300 transform flex items-center space-x-2 shadow-lg ${
                                 isGeneratingImage
-                                    ? 'bg-gray-400 cursor-not-allowed'
-                                    : 'hover:scale-105 hover:shadow-xl'
-                            }`}
-                            style={{
-                                background: !isGeneratingImage ? `linear-gradient(135deg, #5045e6, #7c3aed)` : undefined
-                            }}
-                        >
+                                    ? 'bg-gray-600 cursor-not-allowed'
+                                    : 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 hover:scale-105 hover:shadow-xl'
+                            }`}>
                             <span className="relative z-10 flex items-center space-x-2">
                                 {isGeneratingImage ? (
                                     <>
@@ -835,7 +802,7 @@ const DesignAgentChat = () => {
                                     </>
                                 ) : (
                                     <>
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                                         </svg>
                                         <span>Generate Furnished Room</span>
@@ -845,22 +812,24 @@ const DesignAgentChat = () => {
                                     </>
                                 )}
                             </span>
+                            
+                            {/* Gradient overlay on hover - only when not generating */}
+                            {!isGeneratingImage && (
+                                <div className="absolute inset-0 bg-gradient-to-r from-purple-700 to-blue-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg"></div>
+                            )}
                         </button>
                     </div>
                 </div>
 
                 {/* Loading progress indicator */}
                 {isGeneratingImage && (
-                    <div className="mt-4 p-4 bg-blue-50 rounded-xl max-w-2xl border border-blue-200">
+                    <div className="mt-3 p-3 bg-gray-800/30 backdrop-blur-sm rounded-lg max-w-2xl border border-gray-700/30">
                         <div className="flex items-center space-x-3 mb-2">
-                            <div 
-                                className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin"
-                                style={{ borderColor: '#5045e6', borderTopColor: 'transparent' }}
-                            ></div>
-                            <span className="text-sm text-gray-700">Processing your design request...</span>
+                            <div className="w-5 h-5 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                            <span className="text-sm text-gray-300">Processing your design request...</span>
                         </div>
                         
-                        <div className="text-xs text-gray-600">
+                        <div className="text-xs text-gray-400">
                             This may take 30-60 seconds to complete
                         </div>
                     </div>
@@ -875,9 +844,9 @@ const DesignAgentChat = () => {
         }
 
         return (
-            <div className="mt-6 p-6 bg-white rounded-2xl shadow-lg border border-gray-100 max-w-2xl">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                    <svg className="w-5 h-5 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="mt-4 p-4 bg-gray-800/20 backdrop-blur-sm rounded-xl max-w-2xl border border-gray-700/30">
+                <h3 className="text-sm font-semibold text-white mb-3 flex items-center">
+                    <svg className="w-4 h-4 mr-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     Generated Images ({generatedImages.length})
@@ -886,7 +855,7 @@ const DesignAgentChat = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {generatedImages.map((image, index) => (
                         <div key={image.id} className="relative group">
-                            <div className="relative bg-white rounded-xl overflow-hidden border border-gray-200 hover:border-gray-300 transition-colors shadow-sm hover:shadow-md">
+                            <div className="relative bg-gray-700/30 rounded-lg overflow-hidden border border-gray-600/30 hover:border-gray-500 transition-colors">
                                 <img
                                     src={`data:image/png;base64,${image.base64Image}`}
                                     alt={`Generated image ${index + 1}`}
@@ -895,24 +864,24 @@ const DesignAgentChat = () => {
                                 />
                                 
                                 {/* Action buttons overlay */}
-                                <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
+                                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
                                     <button
                                         onClick={() => setExpandedImage(`data:image/png;base64,${image.base64Image}`)}
-                                        className="bg-white/90 hover:bg-white text-gray-700 p-2 rounded-lg shadow-sm"
+                                        className="bg-black/60 hover:bg-black/80 text-white p-2 rounded"
                                         title="Expand image"
                                     >
                                         <Expand className="w-4 h-4" />
                                     </button>
                                     <button
                                         onClick={() => handleDownloadImage(image.base64Image, index)}
-                                        className="bg-white/90 hover:bg-white text-gray-700 p-2 rounded-lg shadow-sm"
+                                        className="bg-black/60 hover:bg-black/80 text-white p-2 rounded"
                                         title="Download image"
                                     >
                                         <Download className="w-4 h-4" />
                                     </button>
                                     <button
                                         onClick={() => handleDeleteGeneratedImage(image.id, index)}
-                                        className="bg-red-50 hover:bg-red-100 text-red-600 p-2 rounded-lg shadow-sm"
+                                        className="bg-red-600/80 hover:bg-red-600 text-white p-2 rounded"
                                         title="Delete image"
                                     >
                                         <Trash2 className="w-4 h-4" />
@@ -920,7 +889,7 @@ const DesignAgentChat = () => {
                                 </div>
                                 
                                 {/* Image number badge */}
-                                <div className="absolute bottom-3 left-3 bg-white/90 text-gray-700 text-sm px-3 py-1 rounded-lg shadow-sm">
+                                <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
                                     #{index + 1}
                                 </div>
                             </div>
@@ -944,12 +913,12 @@ const DesignAgentChat = () => {
                     <img
                         src={expandedImage}
                         alt="Expanded generated image"
-                        className="max-w-full max-h-full object-contain rounded-xl shadow-2xl"
+                        className="max-w-full max-h-full object-contain rounded-lg"
                         onClick={(e) => e.stopPropagation()}
                     />
                     <button
                         onClick={() => setExpandedImage(null)}
-                        className="absolute top-4 right-4 bg-white/90 hover:bg-white text-gray-700 p-3 rounded-full shadow-lg"
+                        className="absolute top-4 right-4 bg-black/60 hover:bg-black/80 text-white p-2 rounded-full"
                     >
                         <X className="w-6 h-6" />
                     </button>
@@ -959,28 +928,15 @@ const DesignAgentChat = () => {
     };
 
     return (
-        <div className="flex h-screen bg-gray-50">
-            {/* Sidebar Overlay (Mobile) */}
-            {isMobile && sidebarOpen && (
-                <div 
-                    className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
-                    onClick={() => setSidebarOpen(false)}
-                />
-            )}
-
+        <div className="flex h-screen bg-gradient-to-br from-gray-900 via-black to-purple-900 text-white">
             {/* Sidebar */}
-            <div className={`${
-                isMobile 
-                    ? `fixed left-0 top-0 h-full z-50 transform transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`
-                    : `relative transition-all duration-300 ${sidebarOpen ? 'w-80' : 'w-0'}`
-            } bg-white border-r border-gray-200 flex flex-col overflow-hidden shadow-lg`}
-            style={{ width: isMobile ? '320px' : undefined }}>
-                <div className="p-6 border-b border-gray-200">
-                    <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-xl font-semibold text-gray-800">Chat History</h2>
+            <div className={`${sidebarOpen ? 'w-80' : 'w-0'} transition-all duration-300 bg-gray-800/50 backdrop-blur-sm border-r border-gray-700/50 flex flex-col overflow-hidden`}>
+                <div className="p-4 border-b border-gray-700/50">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-lg font-semibold">Chat History</h2>
                         <button
                             onClick={() => setSidebarOpen(false)}
-                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
+                            className="p-1 hover:bg-gray-700/50 rounded transition-colors"
                         >
                             <X className="w-5 h-5" />
                         </button>
@@ -988,15 +944,14 @@ const DesignAgentChat = () => {
                     <div className="flex gap-2">
                         <button
                             onClick={createNewChat}
-                            className="flex-1 text-white px-4 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2 shadow-md hover:shadow-lg"
-                            style={{ background: 'linear-gradient(135deg, #5045e6, #7c3aed)' }}
+                            className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2"
                         >
                             <Plus className="w-4 h-4" />
                             <span>New Chat</span>
                         </button>
                         <button
                             onClick={handleClearAllChats}
-                            className="bg-red-500 hover:bg-red-600 text-white px-3 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 shadow-md"
+                            className="bg-red-600 hover:bg-red-700 px-3 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105"
                             title="Clear all chats"
                         >
                             <Trash2 className="w-4 h-4" />
@@ -1009,22 +964,18 @@ const DesignAgentChat = () => {
                         <div
                             key={session.sessionId}
                             onClick={() => switchToChat(session.sessionId)}
-                            className={`group p-4 rounded-xl cursor-pointer transition-all duration-200 flex items-center justify-between ${
+                            className={`group p-3 rounded-lg cursor-pointer transition-all duration-200 flex items-center justify-between ${
                                 currentSessionId === session.sessionId 
-                                    ? 'bg-blue-50 border-2 border-blue-200 shadow-sm' 
-                                    : 'hover:bg-gray-50 border border-transparent'
+                                    ? 'bg-purple-600/20 border border-purple-500/50' 
+                                    : 'hover:bg-gray-700/30'
                             }`}
-                            style={{
-                                backgroundColor: currentSessionId === session.sessionId ? '#f0f0ff' : undefined,
-                                borderColor: currentSessionId === session.sessionId ? '#5045e6' : undefined
-                            }}
                         >
                             <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium truncate text-gray-800">{session.title}</p>
-                                <p className="text-xs text-gray-500 mt-1">
+                                <p className="text-sm font-medium truncate">{session.title}</p>
+                                <p className="text-xs text-gray-400">
                                     {new Date(session.createdAt).toLocaleDateString()}
                                 </p>
-                                <div className="flex items-center space-x-2 mt-2">
+                                <div className="flex items-center space-x-1 mt-1">
                                     <div className={`w-2 h-2 rounded-full ${
                                         session.status === 'generating' ? 'bg-yellow-400' :
                                         session.status === 'completed' ? 'bg-green-400' :
@@ -1038,9 +989,9 @@ const DesignAgentChat = () => {
                             {chatSessions.length > 1 && (
                                 <button
                                     onClick={(e) => deleteChat(session.sessionId, e)}
-                                    className="opacity-0 group-hover:opacity-100 p-2 hover:bg-red-50 rounded-lg transition-all text-red-500"
+                                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500/20 rounded transition-all"
                                 >
-                                    <Trash2 className="w-4 h-4" />
+                                    <Trash2 className="w-4 h-4 text-red-400" />
                                 </button>
                             )}
                         </div>
@@ -1051,33 +1002,30 @@ const DesignAgentChat = () => {
             {/* Main Chat Area */}
             <div className="flex-1 flex flex-col">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 shadow-sm">
-                    <div className="flex items-center space-x-4">
-                        {(!sidebarOpen || isMobile) && (
+                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800/50 backdrop-blur-sm">
+                    <div className="flex items-center space-x-3">
+                        {!sidebarOpen && (
                             <button
                                 onClick={() => setSidebarOpen(true)}
-                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
+                                className="p-2 hover:bg-gray-800/50 rounded-lg transition-colors"
                             >
                                 <Menu className="w-5 h-5" />
                             </button>
                         )}
-                        <div 
-                            className="w-10 h-10 rounded-xl flex items-center justify-center text-white"
-                            style={{ background: 'linear-gradient(135deg, #5045e6, #7c3aed)' }}
-                        >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
+                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>
                         </div>
                         <div>
-                            <h1 className="text-xl font-bold text-gray-800">Saumya</h1>
-                            <p className="text-sm text-gray-600">AI Design Assistant</p>
+                            <h1 className="text-xl font-bold">Saumya</h1>
+                            <p className="text-xs text-gray-400">AI Design Assistant</p>
                         </div>
                     </div>
 
                     <div className="flex items-center space-x-3">
                         <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                        <span className="text-sm text-gray-600">Online</span>
+                        <span className="text-sm text-gray-400">Online</span>
                     </div>
                 </div>
 
@@ -1086,14 +1034,11 @@ const DesignAgentChat = () => {
                     {currentSession?.conversation.length === 0 && !isGenerating ? (
                         <div className="flex items-center justify-center h-full">
                             <div className="text-center max-w-md">
-                                <div 
-                                    className="w-20 h-20 mx-auto rounded-2xl flex items-center justify-center mb-6 text-white"
-                                    style={{ background: 'linear-gradient(135deg, #5045e6, #7c3aed)' }}
-                                >
-                                    <Bot className="w-10 h-10" />
+                                <div className="w-16 h-16 mx-auto bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mb-4">
+                                    <Bot className="w-8 h-8 text-white" />
                                 </div>
-                                <h3 className="text-2xl font-semibold mb-4 text-gray-800">Start a New Conversation</h3>
-                                <p className="text-gray-600 leading-relaxed">Hi! I'm Saumya, your AI room design companion. Describe what you want to create and I'll help bring your vision to life.</p>
+                                <h3 className="text-xl font-semibold mb-2">Start a New Conversation</h3>
+                                <p className="text-gray-400">Hi! I'm Saumya, your AI room design companion. Describe what you want to create and I'll help bring your vision to life.</p>
                             </div>
                         </div>
                     ) : (
@@ -1106,49 +1051,43 @@ const DesignAgentChat = () => {
 
                                 return (
                                     <div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                        <div className={`flex items-start space-x-4 max-w-3xl ${message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                                        <div className={`flex items-start space-x-3 max-w-3xl ${message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
                                             {/* Avatar */}
                                             <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
                                                 message.role === 'user'
-                                                    ? 'bg-gray-200 text-gray-700'
-                                                    : 'text-white'
-                                            }`}
-                                            style={{
-                                                background: message.role === 'assistant' ? 'linear-gradient(135deg, #5045e6, #7c3aed)' : undefined
-                                            }}>
+                                                    ? 'bg-gray-700'
+                                                    : 'bg-gradient-to-r from-purple-500 to-blue-500'
+                                            }`}>
                                                 {message.role === 'user' ? (
                                                     <User className="w-5 h-5" />
                                                 ) : (
-                                                    <Bot className="w-5 h-5" />
+                                                    <Bot className="w-5 h-5 text-white" />
                                                 )}
                                             </div>
 
                                             {/* Message Content */}
                                             <div className={`flex flex-col ${message.role === 'user' ? 'items-end' : 'items-start'}`}>
-                                                <div className={`px-5 py-4 rounded-2xl max-w-2xl shadow-sm ${
+                                                <div className={`px-4 py-3 rounded-2xl max-w-2xl ${
                                                     message.role === 'user'
-                                                        ? 'text-white'
-                                                        : 'bg-white border border-gray-200 text-gray-800'
-                                                }`}
-                                                style={{
-                                                    background: message.role === 'user' ? 'linear-gradient(135deg, #5045e6, #7c3aed)' : undefined
-                                                }}>
+                                                        ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white'
+                                                        : 'bg-gray-800/50 backdrop-blur-sm border border-gray-700/50'
+                                                }`}>
                                                     {/* Message Images */}
                                                     {messageImages.length > 0 && (
-                                                        <div className="mb-4 space-y-2">
+                                                        <div className="mb-3 space-y-2">
                                                             {messageImages.map((imageSrc, imgIndex) => (
                                                                 <img
                                                                     key={imgIndex}
                                                                     src={imageSrc}
                                                                     alt="Uploaded image"
-                                                                    className="max-w-md rounded-xl shadow-sm"
+                                                                    className="max-w-md rounded-lg"
                                                                 />
                                                             ))}
                                                         </div>
                                                     )}
                                                     
                                                     {/* Message Text */}
-                                                    <pre className="text-sm leading-relaxed whitespace-pre-wrap">{messageText}</pre>
+                                                    <pre className="text-sm text-wrap leading-relaxed">{messageText}</pre>
                                                 </div>
 
                                                 {/* Products Selection UI - Show even during image generation */}
@@ -1171,30 +1110,24 @@ const DesignAgentChat = () => {
                             {/* Generation Indicator - Show when generating */}
                             {isGenerating && (
                                 <div className="flex justify-start">
-                                    <div className="flex items-start space-x-4 max-w-3xl">
+                                    <div className="flex items-start space-x-3 max-w-3xl">
                                         {/* Avatar */}
-                                        <div 
-                                            className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-white"
-                                            style={{ background: 'linear-gradient(135deg, #5045e6, #7c3aed)' }}
-                                        >
-                                            <Bot className="w-5 h-5" />
+                                        <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-r from-purple-500 to-blue-500">
+                                            <Bot className="w-5 h-5 text-white" />
                                         </div>
 
                                         {/* Loading Content */}
                                         <div className="flex flex-col items-start">
-                                            <div className="bg-white rounded-2xl p-6 w-full max-w-md border border-gray-200 shadow-sm">
+                                            <div className="bg-gray-800/30 backdrop-blur-sm rounded-2xl p-6 w-full max-w-md border border-gray-700/50">
                                                 <div className="flex items-center space-x-3 mb-4">
-                                                    <div 
-                                                        className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin"
-                                                        style={{ borderColor: '#5045e6', borderTopColor: 'transparent' }}
-                                                    ></div>
-                                                    <span className="text-gray-600 text-sm">Processing your request...</span>
+                                                    <div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                                                    <span className="text-gray-400 text-sm">Processing your request...</span>
                                                 </div>
 
                                                 <div className="space-y-2">
-                                                    <div className="h-3 bg-gray-200 rounded animate-pulse"></div>
-                                                    <div className="h-3 bg-gray-200 rounded animate-pulse w-4/5"></div>
-                                                    <div className="h-3 bg-gray-200 rounded animate-pulse w-3/4"></div>
+                                                    <div className="h-3 bg-gray-600/50 rounded animate-pulse"></div>
+                                                    <div className="h-3 bg-gray-600/50 rounded animate-pulse w-4/5"></div>
+                                                    <div className="h-3 bg-gray-600/50 rounded animate-pulse w-3/4"></div>
                                                 </div>
                                             </div>
                                         </div>
@@ -1207,23 +1140,24 @@ const DesignAgentChat = () => {
                 </div>
 
                 {/* Input Area */}
-                <div className="border-t border-gray-200 p-6 bg-white">
-                    <div className="max-w-4xl mx-auto">
+                <div className="border-t border-gray-800/50 p-6">
+                    {/* Chat Mode */}
+                    {<div className="max-w-4xl mx-auto">
                         {/* Upload Preview */}
                         {uploadedImage && (
-                            <div className="mb-4 p-4 bg-gray-50 rounded-xl flex items-center space-x-4 border border-gray-200">
+                            <div className="mb-4 p-3 bg-gray-700/50 rounded-lg flex items-center space-x-3">
                                 <img 
                                     src={URL.createObjectURL(uploadedImage)} 
                                     alt={uploadedImage.name}
-                                    className="w-14 h-14 object-cover rounded-lg"
+                                    className="w-12 h-12 object-cover rounded"
                                 />
                                 <div className="flex-1">
-                                    <p className="text-sm font-medium text-gray-800">{uploadedImage.name}</p>
-                                    <p className="text-xs text-gray-600">Ready to upload</p>
+                                    <p className="text-sm font-medium">{uploadedImage.name}</p>
+                                    <p className="text-xs text-gray-400">Ready to upload</p>
                                 </div>
                                 <button
                                     onClick={removeUploadedImage}
-                                    className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500"
+                                    className="p-1 hover:bg-gray-600/50 rounded transition-colors"
                                 >
                                     <X className="w-4 h-4" />
                                 </button>
@@ -1231,7 +1165,7 @@ const DesignAgentChat = () => {
                         )}
 
                         {/* Message Input */}
-                        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
+                        <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-4">
                             <div className="flex items-end space-x-4">
                                 <div className="flex-1 relative">
                                     <textarea
@@ -1239,24 +1173,21 @@ const DesignAgentChat = () => {
                                         onChange={(e) => setPrompt(e.target.value)}
                                         onKeyPress={handleKeyPress}
                                         placeholder="Describe what you want to create..."
-                                        className="w-full bg-transparent text-gray-800 placeholder-gray-500 resize-none outline-none text-sm leading-relaxed min-h-[60px] max-h-32 pr-12"
+                                        className="w-full bg-transparent text-white placeholder-gray-400 resize-none outline-none text-sm leading-relaxed min-h-[60px] max-h-32 pr-12"
                                         rows={2}
                                     />
                                     <button
                                         onClick={() => fileInputRef.current?.click()}
-                                        className="absolute bottom-3 right-3 p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-500"
+                                        className="absolute bottom-3 right-3 p-2 hover:bg-gray-600/50 rounded-lg transition-colors"
                                     >
-                                        <ImagePlus className="w-5 h-5" />
+                                        <ImagePlus className="w-5 h-5 text-gray-400" />
                                     </button>
                                 </div>
 
                                 <button
                                     onClick={handleGenerate}
                                     disabled={!prompt.trim() || isGenerating}
-                                    className="text-white p-3 rounded-xl transition-all duration-200 flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
-                                    style={{
-                                        background: !prompt.trim() || isGenerating ? '#d1d5db' : 'linear-gradient(135deg, #5045e6, #7c3aed)'
-                                    }}
+                                    className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-600 disabled:to-gray-600 disabled:cursor-not-allowed text-white p-3 rounded-xl transition-all duration-200 flex-shrink-0"
                                 >
                                     {isGenerating ? (
                                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -1268,8 +1199,8 @@ const DesignAgentChat = () => {
                         </div>
 
                         {/* Quick Actions */}
-                        <div className="flex flex-wrap items-center gap-3 mt-4">
-                            <span className="text-sm text-gray-600 font-medium">Quick rooms:</span>
+                        <div className="flex flex-wrap items-center gap-2 mt-3">
+                            <span className="text-xs text-gray-500">Quick rooms:</span>
                             {[
                                 { name: "Room 1", url: "/images/samples/rooms/room-001.jpg" },
                                 { name: "Room 2", url: "/images/samples/rooms/room-002.jpg" },
@@ -1280,27 +1211,27 @@ const DesignAgentChat = () => {
                                 <div key={index} className="relative group">
                                     <button
                                         onClick={() => handleQuickRoomSelect(room.url, room.name)}
-                                        className="relative w-16 h-12 bg-white hover:bg-gray-50 rounded-xl overflow-hidden transition-all duration-200 hover:scale-105 border border-gray-200 hover:border-gray-300 shadow-sm hover:shadow-md"
+                                        className="relative w-16 h-10 bg-gray-800/30 hover:bg-gray-700/50 rounded-full overflow-hidden transition-all duration-200 hover:scale-105 border border-gray-700/50 hover:border-gray-600"
                                     >
                                         <img
                                             src={room.url}
                                             alt={room.name}
                                             className="w-full h-full object-cover"
                                         />
-                                        <div className="absolute inset-0 bg-black/10 group-hover:bg-black/5 transition-colors"></div>
+                                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
                                     </button>
                                     
                                     {/* Hover enlarged image */}
-                                    <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-20" style={{width: '360px'}}>
-                                        <div className="bg-white rounded-xl p-3 shadow-xl border border-gray-200">
+                                    <div className="absolute bottom-14 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-20" style={{width: '360px'}}>
+                                        <div className="bg-gray-900/90 backdrop-blur-sm rounded-lg p-2 shadow-xl border border-gray-700">
                                             <img
                                                 src={room.url}
                                                 alt={room.name}
-                                                className="object-cover rounded-lg w-full"
+                                                className="object-cover rounded"
                                             />
-                                            <div className="text-sm text-gray-800 text-center mt-2 font-medium">{room.name}</div>
+                                            <div className="text-xs text-white text-center mt-1">{room.name}</div>
                                         </div>
-                                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-transparent border-t-white"></div>
+                                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-transparent border-t-gray-900/90"></div>
                                     </div>
                                 </div>
                             ))}
@@ -1314,7 +1245,7 @@ const DesignAgentChat = () => {
                             onChange={handleImageUpload}
                             className="hidden"
                         />
-                    </div>
+                    </div>}
                 </div>
             </div>
 

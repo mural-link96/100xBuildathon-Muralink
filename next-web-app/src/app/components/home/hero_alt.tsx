@@ -95,7 +95,7 @@ export const HeroSection: React.FC = () => {
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
                     <span className="relative flex items-center gap-3">
                       <Sparkles className="w-5 h-5" />
-                      Start Your Transformation
+                      Prelaunch Sign up
                     </span>
                   </Button>
                 </div>
