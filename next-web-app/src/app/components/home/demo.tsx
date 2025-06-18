@@ -1,11 +1,16 @@
-import { Pause, Play } from "lucide-react";
-import { useState, useRef } from "react";
+import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 import { FadeInUp } from "../common/animations";
 
 export const FullPageVideoSection: React.FC = () => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
+    const [currentTime, setCurrentTime] = useState(0);
+    const [duration, setDuration] = useState(0);
+    const [showControls, setShowControls] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
     const videoRef = useRef<HTMLVideoElement>(null);
+    const progressRef = useRef<HTMLDivElement>(null);
   
     const togglePlay = () => {
       if (videoRef.current) {
@@ -17,14 +22,117 @@ export const FullPageVideoSection: React.FC = () => {
         setIsPlaying(!isPlaying);
       }
     };
+
+    const skipForward = () => {
+      if (videoRef.current) {
+        videoRef.current.currentTime = Math.min(
+          videoRef.current.currentTime + 10,
+          videoRef.current.duration
+        );
+      }
+    };
+
+    const skipBackward = () => {
+      if (videoRef.current) {
+        videoRef.current.currentTime = Math.max(
+          videoRef.current.currentTime - 10,
+          0
+        );
+      }
+    };
+
+    const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
+      if (videoRef.current && progressRef.current && !isDragging) {
+        const rect = progressRef.current.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const percentage = Math.max(0, Math.min(1, clickX / rect.width));
+        const newTime = percentage * videoRef.current.duration;
+        videoRef.current.currentTime = newTime;
+      }
+    };
+
+    const handleMouseDown = (e: React.MouseEvent) => {
+      e.preventDefault();
+      setIsDragging(true);
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isDragging && videoRef.current && progressRef.current) {
+        const rect = progressRef.current.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const percentage = Math.max(0, Math.min(1, clickX / rect.width));
+        const newTime = percentage * videoRef.current.duration;
+        videoRef.current.currentTime = newTime;
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    const formatTime = (time: number) => {
+      const minutes = Math.floor(time / 60);
+      const seconds = Math.floor(time % 60);
+      return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    };
+
+    useEffect(() => {
+      const video = videoRef.current;
+      if (!video) return;
+
+      const updateTime = () => {
+        if (!isDragging) {
+          setCurrentTime(video.currentTime);
+        }
+        setDuration(video.duration);
+      };
+
+      const handleLoadedMetadata = () => {
+        setDuration(video.duration);
+      };
+
+      const handlePlay = () => {
+        setIsPlaying(true);
+        setShowControls(true);
+      };
+
+      const handlePause = () => {
+        setIsPlaying(false);
+      };
+
+      video.addEventListener('timeupdate', updateTime);
+      video.addEventListener('loadedmetadata', handleLoadedMetadata);
+      video.addEventListener('play', handlePlay);
+      video.addEventListener('pause', handlePause);
+
+      return () => {
+        video.removeEventListener('timeupdate', updateTime);
+        video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+        video.removeEventListener('play', handlePlay);
+        video.removeEventListener('pause', handlePause);
+      };
+    }, [isDragging]);
+
+    useEffect(() => {
+      if (isDragging) {
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+        document.body.style.userSelect = 'none';
+      } else {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+        document.body.style.userSelect = '';
+      }
+
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+        document.body.style.userSelect = '';
+      };
+    }, [isDragging]);
   
     return (
       <section className="relative flex items-center justify-center overflow-hidden bg-white py-16 md:py-32">
-        {/* Background Pattern */}
-        {/* <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%239C92AC" fill-opacity="0.05"%3E%3Cpath d="m36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30"></div>
-        </div> */}
-
         <div className="relative z-10 w-full max-w-7xl mx-auto px-4 md:px-6">
           {/* Title Section */}
           <FadeInUp>
@@ -50,26 +158,91 @@ export const FullPageVideoSection: React.FC = () => {
                 className="w-full h-auto aspect-video object-cover"
               >
                 <source
-                  src="https://res.cloudinary.com/dbv2xmoof/video/upload/v1750108542/dcgpjelafnluizlrdyaj.mp4"
+                  src="https://res.cloudinary.com/dgyzq5oyc/video/upload/v1750270064/rhx0g2g3rjo25sa7apzk.mp4"
                   type="video/mp4"
                 />
               </video>
               
-              {/* Play/Pause Button Overlay */}
+              {/* Main Play/Pause Button (shows when not playing or on hover) */}
               <div className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
                 !isPlaying || isHovered ? 'opacity-100' : 'opacity-0'
               }`}>
-                <button
-                  onClick={togglePlay}
-                  className="group relative inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 bg-white rounded-full transition-all duration-300 hover:scale-110"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
-                  {isPlaying ? (
-                    <Pause className="w-6 h-6 md:w-8 md:h-8 text-black" />
-                  ) : (
+                {!showControls && (
+                  <button
+                    onClick={togglePlay}
+                    className="group relative inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 bg-white rounded-full transition-all duration-300 hover:scale-110"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
                     <Play className="w-6 h-6 md:w-8 md:h-8 text-black ml-1" />
-                  )}
-                </button>
+                  </button>
+                )}
+              </div>
+
+              {/* Video Controls (shows when playing) */}
+              <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent transition-all duration-300 ${
+                showControls && (isPlaying || isHovered) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full'
+              }`}>
+                {/* Progress Bar */}
+                <div className="px-6 pt-4">
+                  <div 
+                    ref={progressRef}
+                    className="relative h-2 bg-white/30 rounded-full cursor-pointer group"
+                    onClick={handleProgressClick}
+                  >
+                    <div 
+                      className="absolute top-0 left-0 h-full bg-indigo-600 rounded-full transition-all duration-150"
+                      style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }}
+                    ></div>
+                    <div 
+                      className={`absolute top-1/2 transform -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-lg cursor-grab transition-all duration-200 ${
+                        isDragging ? 'cursor-grabbing scale-110' : 'hover:scale-110'
+                      }`}
+                      style={{ left: `${duration > 0 ? (currentTime / duration) * 100 : 0}%`, marginLeft: '-8px' }}
+                      onMouseDown={handleMouseDown}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* Controls Bar */}
+                <div className="flex items-center justify-between px-6 py-4">
+                  {/* Left side - Time */}
+                  <div className="text-white text-sm font-medium">
+                    {formatTime(currentTime)} / {formatTime(duration)}
+                  </div>
+
+                  {/* Center - Control Buttons */}
+                  <div className="flex items-center space-x-4">
+                    <button
+                      onClick={skipBackward}
+                      className="p-2 text-white hover:text-indigo-400 transition-colors duration-200"
+                      title="Skip back 10 seconds"
+                    >
+                      <SkipBack className="w-5 h-5" />
+                    </button>
+                    
+                    <button
+                      onClick={togglePlay}
+                      className="p-3 bg-white/20 hover:bg-white/30 rounded-full text-white transition-all duration-200 hover:scale-105"
+                    >
+                      {isPlaying ? (
+                        <Pause className="w-5 h-5" />
+                      ) : (
+                        <Play className="w-5 h-5 ml-0.5" />
+                      )}
+                    </button>
+                    
+                    <button
+                      onClick={skipForward}
+                      className="p-2 text-white hover:text-indigo-400 transition-colors duration-200"
+                      title="Skip forward 10 seconds"
+                    >
+                      <SkipForward className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  {/* Right side - Volume (placeholder for future enhancement) */}
+                  <div className="w-16"></div>
+                </div>
               </div>
             </div>
           </FadeInUp>
