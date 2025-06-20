@@ -19,7 +19,7 @@ const handler = NextAuth({
 
         // Call backend /api/v1/auth/google with Google access_token
         try {
-          const backendResponse = await fetch(`${process.env.NEXT_PUBLIC_FAST_API_URL}/api/v1/auth/google`, {
+          const backendResponse = await fetch(`${process.env.NEXT_PUBLIC_FAST_API_URL_LOGIN}/api/v1/auth/google`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
