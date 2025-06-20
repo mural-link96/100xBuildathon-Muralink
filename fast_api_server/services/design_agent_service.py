@@ -260,7 +260,7 @@ async def design_assistant_image_generation(context, user_image: str, product_im
         tools=[
             {
                 "type": "file_search",
-                "vector_store_ids": ["vs_683e3aaf9c14819191c0431640b76174"]
+                "vector_store_ids": ["vs_684752e9fc008191a0a8e3acc7642b9a"]
             },
             {
                 "type": "image_generation",
