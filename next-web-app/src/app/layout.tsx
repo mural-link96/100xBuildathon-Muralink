@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import SessionProvider from "./components/providers/SessionProvider";
+import ReduxProvider from "./components/providers/ReduxProvider";
+import { ProfileInitializer } from "./components/profile/ProfileInitializer";
+import { ProfileModal } from "./components/profile/ProfileModal";
+import { ProfileReminder } from "./components/profile/ProfileReminder";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -31,7 +36,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <ReduxProvider>
+          <SessionProvider>
+            <ProfileInitializer />
+            {children}
+            <ProfileModal />
+            <ProfileReminder />
+          </SessionProvider>
+        </ReduxProvider>
       </body>
     </html>
   );
